@@ -1,0 +1,25 @@
+# kvmhost include file to check drbd settings
+#
+# (c) 2014 by w4c.at
+
+if [ "x$DRBD" != "x" ]; then
+	echo "checking drbd $DRBD"
+	for DRBDID in $DRBD; do
+		ISPRIMARY=`drbd-overview | grep $DRBDID | grep -c 'Primary/'`
+		if [ $ISPRIMARY -lt 1 ]; then
+			echo "trying to set $DRBDID primary";
+			if [ `drbd-overview | grep $DRBDID | grep -c Primary` -gt 0 ]; then
+			 	echo "node is slave"
+			 	exit
+			fi
+		 	if [ `drbd-overview | grep $DRBDID | grep -c 'UpToDate/'` -lt 0 ]; then
+		 		echo "drbd is not UpToDate"
+		 	 	exit
+		 	fi
+		 	drbdadm primary $DRBDID
+		 	sleep 1
+		 	echo `drbd-overview | grep $DRBDID`
+		 	ISPRIMARY=`drbd-overview | grep $DRBDID | grep -c 'Primary/'`
+		fi
+	done
+fi

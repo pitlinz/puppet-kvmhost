@@ -1,0 +1,46 @@
+#!/bin/bash
+#
+# clear current iptable settings
+
+
+# Initialize all the chains by removing all rules
+iptables --flush
+iptables -t nat --flush
+iptables -t mangle --flush
+
+# Delete any user-defined chains
+iptables --delete-chain
+iptables -t nat --delete-chain
+iptables -t mangle --delete-chain
+
+case "$1" in
+	start)
+		# Set chain policies
+		iptables --policy INPUT DROP
+		iptables --policy OUTPUT ACCEPT
+		iptables --policy FORWARD DROP
+		
+		ip6tables --policy INPUT DROP
+		ip6tables --policy OUTPUT DROP
+		ip6tables --policy FORWARD DROP
+				
+		# basic access
+		iptables -A INPUT -i lo -j ACCEPT
+		iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+		iptables -A INPUT -i <%= bridgeif %> -s <%= vlan_net %> -j ACCEPT
+		iptables -A INPUT -p tcp --dport <%= sshport %> -j ACCEPT
+		
+		iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+		iptables -A FORWARD -s <%= vlan_net %>  -d <%= vlan_net %>  ! -i eth0 -j ACCEPT
+		;;
+	stop)
+		# Set chain policies
+		iptables --policy INPUT ACCEPT
+		iptables --policy OUTPUT ACCEPT
+		iptables --policy FORWARD ACCEPT
+		;;
+	restart)
+		$0 stop
+		$0 start
+		;;
+esac	

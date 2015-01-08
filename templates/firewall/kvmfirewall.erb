@@ -1,0 +1,23 @@
+#!/bin/bash
+#
+# init the firewall
+
+. /etc/environment
+
+case "$1" in
+	start)
+		for SCRIPT in `ls /etc/firewall/*.sh`; do
+			 $SCRIPT start
+		done;
+		;;
+	stop)
+		for SCRIPT in `ls /etc/firewall/*init-vlan*.sh`; do
+			 $SCRIPT stop
+		done;		
+		/etc/firewall/000-init.sh stop
+		;;
+	restart)
+		$0 stop
+		$0 start
+		;;
+esac

@@ -1,0 +1,35 @@
+# kvmhost include file to set $VNCID, $MACADDR, $TAP and $NETWORK 
+#
+# (c) 2014 by w4c.at
+
+if [ ! -f <%= kvmhost_etcpath %>/$2.ifup ]; then
+	echo "networkscript <%= kvmhost_etcpath %>/$2.ifup not found"
+	exit
+fi
+
+if [ ! -f <%= kvmhost_etcpath %>/$2.ifdown ]; then
+	echo "networkscript <%= kvmhost_etcpath %>/$2.ifdown not found"
+	exit
+fi
+
+if [ "x$VNCID" == "x" ]; then
+	VNCID=`grep INTIP <%= kvmhost_etcpath %>/$2.conf | cut -f4 -d'.'`
+fi
+
+if [ "x$MACADDR" == "x" ]; then
+	MACADDR=`facter | grep macaddress_<%= kvmhost_brigename %> | cut -f3 -d' ' | cut -f1-3 -d':'`
+	MACADDR="$MACADDR:00:00:$VNCID"
+fi
+
+if [ "x$TAP" == "x" ]; then 
+	TAP="<%= kvmhost_ifprefix %>$VNCID"
+fi
+
+if [ "x$NICMODEL" == "x" ]; then
+	#NICMODEL="e1000"
+	NICMODEL="virtio"
+fi
+
+if [ "x$NETWORK" == "x" ]; then
+	NETWORK="-net nic,vlan=0,model=$NICMODEL,macaddr=$MACADDR -net tap,ifname=$TAP,script=<%= kvmhost_etcpath %>/$2.ifup,downscript=<%= kvmhost_etcpath %>/$2.ifdown"
+fi

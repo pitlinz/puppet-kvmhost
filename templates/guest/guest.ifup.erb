@@ -1,0 +1,23 @@
+#!/bin/bash
+
+CONF=`basename $0 | cut -f1 -d'.'`
+
+. <%= kvmhost_etcpath %>/$CONF.conf
+. <%= kvmhost_basepath %>/bin/ifup.sh 
+
+<% if @fwnat.size != 0 then -%><% fwnat.to_a.each do |fwrule| -%>
+/sbin/iptables -t nat -A <%= fwrule %>
+<% end -%><% end -%>
+
+<% if @fwfilter.size != 0 then -%><% fwfilter.to_a.each do |rule| -%>
+/sbin/iptables -A <%= rule %>
+<% end -%><% end -%>
+
+<% if dnsMadeEasyId != "" then -%>
+	DNSURL="<%= dnsMadeEasyUrl %>?username=<%= dnsMadeEasyUser %>&password=<%= dnsMadeEasyPasswd %>&id=<%= dnsMadeEasyId %>&ip=<%= guestextip %>"	
+    if wget -q -O /proc/self/fd/1 $DNSURL | grep success > /dev/null; then
+		logger -t DNS-Made-Easy -s "DNS Record Updated Successfully"
+	else
+		logger -t DNS-Made-Easy -s "Problem updating DNS record."	
+	fi
+<% end -%>

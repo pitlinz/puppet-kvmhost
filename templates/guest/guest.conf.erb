@@ -1,0 +1,25 @@
+# guest configuration for <%= name %>
+# 
+# This file is handled by puppet, all local modifications will be lost
+#
+# (c) 2014 by w4c.at
+INTIP=<%= guestintip %>
+<% if @guestextip then -%>EXTIP=<%= guestextip %><% end -%> 
+ARGS="-smp <%= guestcpus %> -m <%= guestmemory %> -enable-kvm -k de -cpu host"
+DISKS=""
+<% if @guestdisks.size != 0 then -%><% guestdisks.to_a.each do |disk| -%>
+DISKS="$DISKS<%= disk %> "
+<% end -%><% end -%>  
+<% if guestmacaddr then -%>
+MACADDR="<%= guestmacaddr %>"
+<% end -%> 
+<% if guestdrbd then -%>
+DRBD="<%= guestdrbd %>"
+<% end -%>
+<% if isoimage then -%>
+ISOIMG="<%= isoimage %>"
+<% end -%>
+<% if vncid then -%>
+VNCID="<%= vncid %>"
+<% end -%>
+

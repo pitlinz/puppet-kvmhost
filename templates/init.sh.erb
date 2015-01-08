@@ -1,0 +1,83 @@
+#!/bin/bash
+#
+# kvm init script
+#
+# (c) 2012 by w4c.at
+#
+
+. /etc/environment
+
+mkdir -p /var/run/kvm
+
+if [ "x$2" == "x" ]; then
+	echo 'usage $0 cmd confname'
+	exit 1
+fi
+
+if [ ! -f <%= kvmhost_etcpath %>/$2.conf ]; then
+	echo "config file <%= kvmhost_etcpath %>/$2.conf not found"
+	exit 1
+fi
+
+. <%= kvmhost_etcpath %>/$2.conf
+
+echo "$1 $2 $3 ($INTIP <=> $EXTIP)"
+
+. <%= kvmhost_basepath %>/bin/includes/checknetwork.sh.inc
+
+case "$1" in
+	setup)
+		. <%= kvmhost_basepath %>/bin/includes/checkdrbd.sh.inc
+		. <%= kvmhost_basepath %>/bin/includes/checkdisks.sh.inc
+		. <%= kvmhost_basepath %>/bin/includes/checkcdrom.sh.inc
+       	echo "kvm -vnc :$VNCID $ARGS $DISKS $NETWORK -daemonize $CDROM --boot d"
+       	/usr/bin/kvm -vnc :$VNCID $ARGS $DISKS $NETWORK -daemonize $CDROM --boot d
+		sleep 1
+  		echo `ps aux | grep kvm | grep $2 | grep " \:$VNCID " | cut -b 8-15 | tr -d ' '` > <%= kvmhost_piddir %>/$2.pid
+		;;
+
+	start)
+		. <%= kvmhost_basepath %>/bin/includes/checkdrbd.sh.inc
+		. <%= kvmhost_basepath %>/bin/includes/checkdisks.sh.inc	
+       	echo "/usr/bin/kvm -vnc :$VNCID $ARGS $DISKS $NETWORK -daemonize"
+       	/usr/bin/kvm -vnc :$VNCID $ARGS $DISKS $NETWORK $CDROM -daemonize
+		sleep 1
+       	echo `ps aux | grep kvm | grep $2 | grep " \:$VNCID " | cut -b 8-15 | tr -d ' '` > <%= kvmhost_piddir %>/$2.pid
+		;;
+
+	stop)
+		echo "stopping $2"
+		PID=`ps aux | grep kvm | grep $2 | grep " \:$VNCID " | cut -b 8-15 | tr -d ' '`
+
+		if [ "x$PID" == "x" ]; then
+			echo "no running instance found for $2"
+			exit
+		fi
+
+		if [ `ping $INTIP -c 4 | grep -c Unreachable` -lt 1  ]; then
+			/usr/bin/ssh root@$INTIP "telinit 0"
+		fi
+
+		WAITCOUNT=0
+		while ( [ `ping $INTIP -c 4 | grep -c Unreachable` -lt 2  ] && [ $WAITCOUNT -lt 10 ] ); do
+			sleep 1s
+			let WAITCOUNT=WAITCOUNT+1
+			echo "waiting shutdown .... $WAITCOUNT"
+       	done;
+		
+		$0 killhost $2
+		;;
+
+	killhost)
+		PID=`ps aux | grep kvm | grep $2 | grep " \:$VNCID " | cut -b 8-15 | tr -d ' '`
+		if [ "x$PID" != "x" ]; then
+			kill -9 $PID
+		fi
+		
+		if [ -f <%= kvmhost_piddir %>/$2.tap ]; then
+			TAP=`cat <%= kvmhost_piddir %>/$2.tap`
+			<%= kvmhost_etcpath %>/$2.ifdown $TAP $2
+		fi
+		rm <%= kvmhost_piddir %>/$2.*
+		;;
+esac

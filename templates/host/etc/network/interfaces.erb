@@ -1,0 +1,23 @@
+# Loopback device:
+auto lo
+iface lo inet loopback
+
+# device: eth0
+auto  eth0
+iface eth0 inet static
+  address   <%= ipaddress_eth0 %>
+  netmask   <%= netmask_eth0 %>
+  gateway   <%= gateway_eth0 %>
+  # default route to access subnet
+  up route add -net <%= network_eth0 %> netmask <%= netmask_eth0 %> gw <%= gateway_eth0 %> eth0
+
+  
+auto <%= sysprefix %>br0
+iface <%= sysprefix %>br0 inet static
+        address <%= kvmbridgeip %>
+        netmask 255.255.255.0
+        pre-up /sbin/brctl addbr <%= sysprefix %>br0
+        pre-up echo 1 > /proc/sys/net/ipv4/ip_forward
+        post-down /sbin/brctl delbr <%= sysprefix %>br0
+        post-down echo 0 > /proc/sys/net/ipv4/ip_forward
+  

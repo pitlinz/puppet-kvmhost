@@ -1,0 +1,31 @@
+# kvmhost include file to set $CDROM
+#
+# (c) 2014 by w4c.at
+
+if [ "x$CDROM" == "x" -a "x$1" == "xsetup" ]; then
+	if [ "x$3" == "x" ]; then 
+		if [ "x$ISOIMG" == "x" ]; then
+			if [ -f <%= kvmhost_cdrompath %>/<%= kvmhost_defaultiso %> ]; then
+				CDROM="--cdrom <%= kvmhost_cdrompath %>/<%= kvmhost_defaultiso %>"
+			else 
+				echo "default os iso <%= kvmhost_defaultiso %> not found"
+				exit 1
+			fi
+		else
+			if [ -f <%= kvmhost_cdrompath %>/$ISOIMG ]; then
+				CDROM="--cdrom <%= kvmhost_cdrompath %>/$ISOIMG"
+			else 
+				echo "default os iso $ISOIMG not found"
+				exit 1
+			fi		
+		fi
+	else 
+		if [ -f <%= kvmhost_cdrompath %>/$3 ]; then
+			CDROM="--cdrom <%= kvmhost_cdrompath %>/$3"
+		else
+			echo "could not find iso $3 in <%= kvmhost_cdrompath %>"
+			exit 1
+		fi
+	fi
+fi
+		

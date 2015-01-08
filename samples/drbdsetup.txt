@@ -1,0 +1,4 @@
+lvcreate --name blog --size 10G ukvm
+lvcreate --name blog-swap --size 4G ukvm
+drbdadm create-md blog
+drbdadm up blog

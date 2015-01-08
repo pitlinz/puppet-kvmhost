@@ -1,0 +1,37 @@
+# kvmhost include file to set $DISKS
+#
+# (c) 2014 by w4c.at
+
+
+if [ "x$DISKS" == "x" ]; then
+	if [ "x$HDA" == "x" ]; then
+		"please set HDA in <%= kvmhost_etcpath %>$2.conf"
+		exit
+	fi
+
+	if [ ! -f $HDA ]; then
+		if [ "x$DRBD" == "x" ]; then
+			echo "could nat find $HDA"
+			exit
+		fi
+	fi
+
+	DISKS="-hda $HDA "
+	if ( [ "x$DISKS" == "x" ] || [ ! -f $HDA ] ); then
+		echo "HDA not defined"
+		echo "check config or create $HDA with kvm-image create"
+		exit 1
+	fi
+
+	if ( [ "x$HDB" != "x" ] &&  [ -f $HDB ] ); then
+		DISKS="$DISKS -hdb $HDB"
+	fi
+
+	if ( [ "x$HDC" != "x" ] &&  [ -f $HDC ] ); then
+		DISKS="$DISKS -hdc $HDC"
+	fi
+
+	if ( [ "x$HDD" != "x" ] &&  [ -f $HDD ] ); then
+		DISKS="$DISKS -hdd $HDD"
+	fi
+fi

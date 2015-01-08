@@ -1,0 +1,11 @@
+resource <%= name %> {
+  device /dev/drbd_<%= name %> minor <%= minor %>;
+  disk   <%= disk %>;
+  meta-disk internal;
+  on <%= drbdMasterName %> {
+    address <%= drbdMasterIp %>:77<%= minor %>;
+  }
+  on <%= drbdSlaveName %> {
+    address <%= drbdSlaveIp %>:77<%= minor %>;
+  }
+}

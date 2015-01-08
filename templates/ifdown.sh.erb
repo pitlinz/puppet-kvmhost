@@ -1,0 +1,45 @@
+#!/bin/bash
+echo $@
+
+. /etc/environment
+
+if [ "x$2" == "x" ]; then
+	CONF=`basename $0 | cut -f1 -d'.'`
+else
+	CONF=$2
+fi
+
+if [ ! -f <%= kvmhost_etcpath %>/$CONF.conf ]; then
+        echo "Error config file  <%= kvmhost_etcpath %>/$CONF.conf not found"
+        exit 1
+fi
+
+. <%= kvmhost_etcpath %>/$CONF.conf
+
+if [ "x$VNCID" == "x" ]; then
+        VNCID=`grep INTIP <%= kvmhost_etcpath %>/$CONF.conf | cut -f4 -d'.'`
+fi
+
+if [ "x$EXTIP" == "x" ]; then
+        EXTIP=`ifconfig eth0 | grep "inet addr" | cut -f2 -d':' | cut -f1 -d' '`
+fi
+
+/sbin/iptables -D FORWARD -s $INTIP/32 -j ACCEPT
+
+if [ $VNCID -gt 0 -a $VNCID -lt 100 ]; then
+	/sbin/iptables -D FORWARD -d $INTIP/32 -p tcp --dport 22 -j ACCEPT
+	/sbin/iptables -t nat -D PREROUTING -i eth0 -p tcp --dport 22$VNCID -j DNAT --to-destination $INTIP:22
+fi
+
+/sbin/iptables -t nat -D POSTROUTING -s $INTIP/32 -d 192.168.0.0/16 -j ACCEPT
+/sbin/iptables -t nat -D KVMPOSTROUTING -s $INTIP/32 -j SNAT --to $EXTIP
+        
+if [ -n "$1" ];then
+	/sbin/brctl delif <%= kvmhost_brigename %> $1
+	/sbin/ifconfig $1 down
+	/usr/sbin/tunctl -d $1	
+	rm <%= kvmhost_piddir %>/$CONF.tap
+else
+	echo "Error: no interface specified"
+	exit 1
+fi
