@@ -16,7 +16,7 @@ class kvmhost (
   $cdrompath    = '',
   $defaultiso   = 'ubuntu-14.04.1-server-amd64.iso',
   $ifprefix     = '',
-  $brigename    = 'br0',
+  $bridgename   = 'br0',
   $piddir       = ''
 ) {
 
@@ -52,9 +52,9 @@ class kvmhost (
     default: { $kvmhost_ifprefix = $ifprefix }
   }
 
- case $brigename {
+ case $bridgename {
    '': { $kvmhost_brigename = "${kvmhost_ifprefix}br0" }
-   default: { $kvmhost_brigename = $brigename }
+   default: { $kvmhost_brigename = $bridgename }
  }
 
  case $piddir {
@@ -86,11 +86,14 @@ class kvmhost (
     creates => "${kvmhost_basepath}/cdrom/ubuntu-14.04.1-server-amd64.iso",
     require => File["${kvmhost_cdrompath}/"]
   }
+  
+  /*
   exec {"donload-ubuntu-12.04.5-server-amd64.iso": 
     command => "/usr/bin/wget -O ${kvmhost_basepath}/cdrom/ubuntu-12.04.5-server-amd64.iso http://releases.ubuntu.com/12.04/ubuntu-12.04.5-server-amd64.iso",
     creates => "${kvmhost_basepath}/cdrom/ubuntu-12.04.5-server-amd64.iso",
     require => File["${kvmhost_cdrompath}/"]  
-  }
+  }   
+  */
 
   # main init scripts
 

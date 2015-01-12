@@ -9,7 +9,7 @@
 #
 # requires puppet module install example42-network
 
-define kvmhost::host(
+class kvmhost::host(
  $sysprefix       = 'kvm',
  $hostid          = '00',
  $sshport         = '2200',
@@ -41,7 +41,7 @@ define kvmhost::host(
 
  #monit
  $monitchecks     = true,
- $monitdevices    = null,
+ $monitdevices    = false,
  
  #guests
  $kvm_vgname      = 'kvm',
@@ -176,16 +176,9 @@ define kvmhost::host(
    * monit
    * --------------------------------------------------------- */  
   
-  if $monitchecks {
-    
-    if ! defined(Class['Monit']) { 
-	    class {"monit": 
-	      
-	    }	   
-	  }
-	  
+  if $monitchecks and defined(Class['Monit']) {	  
     if $monitdevices {
-      create_resources(monit::check::device,$monitdevices) 
+      create_resources(monit::check::device,$monitdevices)        
     }  
     
     monit::predefined::checksshd { "sshd_${name}": 
@@ -199,8 +192,6 @@ define kvmhost::host(
       listenip => $br0_ipv4
     }
     monit::predefined::checkiscdhcp { "dhcp_${name}": }
-    
-      
   }
   
   /* ------------------------------------------------
@@ -219,8 +210,7 @@ define kvmhost::host(
       gateway         => $br0_ipv4,
       ippre           => $kvmguest_ippre,
       extip           => $eth0_ipv4,
-      domain          => $lan_domain,
-      
+      domain          => $lan_domain,      
     } 
     create_resources(kvmhost::host::guest,$kvmguests,$kvmguestdefaults) 
   }

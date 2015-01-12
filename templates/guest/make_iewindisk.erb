@@ -1,0 +1,34 @@
+#!/bin/bash
+#
+# script file to make a kvm disk image from a windwos .ova file
+#
+
+. /etc/environment
+
+cd <%= image_path %>
+
+if [ `ls <%= image_path %> | grep -c .ova` -lt 1 ]; then
+	unzip <%= name %>.zip
+	rm <%= image_path %>/<%= name %>.zip
+	touch <%= image_path %>/<%= name %>.zip
+fi
+
+VMDK=<%= image_path %>/<%= name %>.vmdk
+if [ `ls <%= image_path %> | grep -c $VMDK` -lt 1 ]; then
+	tar -xf *.ova
+	rm *.ov?	
+
+	VMDK=<%= name %>.vmdk
+	if [ ! -f $VMDK ]; then
+		mv *.vmdk $VMDK
+	fi
+fi
+
+if [ ! -f <%= name %>.qcow2 ]; then
+	qemu-img convert -f vmdk $VMDK -O qcow2 <%= name %>.qcow2
+
+	if [ -f <%= name %>.qcow2 ]; then
+		rm $VMDK;
+		touch $VMDK
+	fi
+fi

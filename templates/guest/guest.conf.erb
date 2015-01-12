@@ -6,10 +6,25 @@
 INTIP=<%= guestintip %>
 <% if @guestextip then -%>EXTIP=<%= guestextip %><% end -%> 
 ARGS="-smp <%= guestcpus %> -m <%= guestmemory %> -enable-kvm -k de -cpu host"
+<% if @guestdisks.size != 0 then -%>
 DISKS=""
-<% if @guestdisks.size != 0 then -%><% guestdisks.to_a.each do |disk| -%>
+<% guestdisks.to_a.each do |disk| -%>
 DISKS="$DISKS<%= disk %> "
-<% end -%><% end -%>  
+<% end -%>
+<% else -%>
+<% if @guest_hda -%>
+HDA="<%= guest_hda %>"
+<% end -%>
+<% if @guest_hdb -%>
+HDB="<%= guest_hdb %>"
+<% end -%>
+<% if @guest_hdc -%>
+HDC="<%= guest_hdc %>"
+<% end -%>
+<% if @guest_hdd -%>
+HDD="<%= guest_hdd %>"
+<% end -%>
+<% end -%>  
 <% if guestmacaddr then -%>
 MACADDR="<%= guestmacaddr %>"
 <% end -%> 
