@@ -4,16 +4,20 @@
 
 if [ ! -f <%= kvmhost_etcpath %>/$2.ifup ]; then
 	echo "networkscript <%= kvmhost_etcpath %>/$2.ifup not found"
-	exit
+	exit 1
 fi
 
 if [ ! -f <%= kvmhost_etcpath %>/$2.ifdown ]; then
 	echo "networkscript <%= kvmhost_etcpath %>/$2.ifdown not found"
-	exit
+	exit 1
 fi
 
 if [ "x$VNCID" == "x" ]; then
 	VNCID=`grep INTIP <%= kvmhost_etcpath %>/$2.conf | cut -f4 -d'.'`
+	if [ "x$VNCID" == "x" ]; then
+		echo "no VNCID found"
+		exit 1
+	fi
 fi
 
 if [ "x$MACADDR" == "x" ]; then

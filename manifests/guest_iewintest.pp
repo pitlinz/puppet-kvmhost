@@ -25,6 +25,7 @@ define kvmhost::guest_iewintest(
   $fwnat          = [],
   $fwfilter       = [],
   $config_dhcp    = true,
+  $guestnicmodel  = "e1000",
   
   # alternativ disk param method
   $guest_hdb    = false,
@@ -93,6 +94,7 @@ define kvmhost::guest_iewintest(
         fwnat         => $fwnat,
         fwfilter      => $fwfilter, 
         config_dhcp   => $config_dhcp,
+        guestnicmodel => $guestnicmodel,
         
         guest_hda     => "${image_path}/${name}.qcow2",
         guest_hdb     => $guest_hdb,

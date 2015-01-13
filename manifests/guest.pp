@@ -19,6 +19,7 @@ define kvmhost::guest(
   $fwnat        = [],
   $fwfilter     = [],
   $config_dhcp  = true,
+  $guestnicmodel= false,
   
   # disks params
   $guestdrbd    = false,

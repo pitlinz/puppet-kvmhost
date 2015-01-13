@@ -10,7 +10,8 @@
 mkdir -p /var/run/kvm
 
 if [ "x$2" == "x" ]; then
-	echo 'usage $0 cmd confname'
+	echo "usage $0 cmd confname"
+	echo "commands: start stop setup killhost"
 	exit 1
 fi
 
@@ -20,6 +21,11 @@ if [ ! -f <%= kvmhost_etcpath %>/$2.conf ]; then
 fi
 
 . <%= kvmhost_etcpath %>/$2.conf
+
+if [ "x$INTIP" == "x" -a "x$EXTIP" == "x" ]; then
+	echo "no network configured"
+	exit 1
+fi
 
 echo "$1 $2 $3 ($INTIP <=> $EXTIP)"
 

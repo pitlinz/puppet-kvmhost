@@ -20,8 +20,6 @@ class kvmhost (
   $piddir       = ''
 ) {
 
-  notice( "checking kvmhost for : $fqdn" )
-
   case $basepath {
     '': { $kvmhost_basepath = "/srv/kvm" }
     default: { $kvmhost_basepath = "${basepath}" }

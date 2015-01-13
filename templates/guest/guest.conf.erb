@@ -37,4 +37,7 @@ ISOIMG="<%= isoimage %>"
 <% if vncid then -%>
 VNCID="<%= vncid %>"
 <% end -%>
+<% if @guestnicmodel -%>
+NICMODEL="e1000"
+<% end -%>
 
