@@ -13,7 +13,7 @@ define kvmhost::guest(
   $guestmemory  = "1024",
 
   #network params    
-  $guestintip   = undef,
+  $guestintip   = false,
   $guestmacaddr = undef,
   $guestextip   = undef,
   $fwnat        = [],
@@ -29,7 +29,7 @@ define kvmhost::guest(
   $guest_hdb    = false,
   $guest_hdc    = false,
   $guest_hdd    = false,
-  $isoimage = "ubuntu-14.04.1-server-amd64.iso",
+  $isoimage     = "ubuntu-14.04.1-server-amd64.iso",
   
   # dnsMadeEasy setting
   $dnsMadeEasyId = false,
@@ -70,12 +70,12 @@ define kvmhost::guest(
     content => template("kvmhost/guest/guest.ifdown.erb"),
   }
 
-  if $config_dhcp {
-
+/*
+  if $config_dhcp and defined("dhcp::server") {
     dhcp::server::host {"${name}":
         address   => $guestintip,
         hwaddress => $guestmacaddr,
     }    
   }
-
+*/
 }

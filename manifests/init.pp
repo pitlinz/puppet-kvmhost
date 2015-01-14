@@ -10,14 +10,15 @@
 #
 
 class kvmhost (
-  $basepath     = '/srv/kvm',
-  $etcpath      = '',
-  $hdimagepath  = '',
-  $cdrompath    = '',
-  $defaultiso   = 'ubuntu-14.04.1-server-amd64.iso',
-  $ifprefix     = '',
-  $bridgename   = 'br0',
-  $piddir       = ''
+  $basepath         = '/srv/kvm',
+  $etcpath          = '',
+  $hdimagepath      = '',
+  $cdrompath        = '',
+  $defaultiso       = 'ubuntu-14.04.1-server-amd64.iso',
+  $defaultisourl    = '',
+  $ifprefix         = '',
+  $def_bridgename   = 'br0',
+  $piddir           = ''
 ) {
 
   case $basepath {
@@ -50,9 +51,9 @@ class kvmhost (
     default: { $kvmhost_ifprefix = $ifprefix }
   }
 
- case $bridgename {
+ case $def_bridgename {
    '': { $kvmhost_brigename = "${kvmhost_ifprefix}br0" }
-   default: { $kvmhost_brigename = $bridgename }
+   default: { $kvmhost_brigename = $def_bridgename }
  }
 
  case $piddir {
@@ -79,10 +80,18 @@ class kvmhost (
     mode    => "0750",
   }
 
-  exec {"donload-ubuntu-14.04.1-server-amd64.iso":
-    command => "/usr/bin/wget -O ${kvmhost_basepath}/cdrom/ubuntu-14.04.1-server-amd64.iso http://releases.ubuntu.com/14.04.1/ubuntu-14.04.1-server-amd64.iso",
-    creates => "${kvmhost_basepath}/cdrom/ubuntu-14.04.1-server-amd64.iso",
-    require => File["${kvmhost_cdrompath}/"]
+  if $defaultiso == "ubuntu-14.04.1-server-amd64.iso" {
+	  exec {"donload-ubuntu-14.04.1-server-amd64.iso":
+	    command => "/usr/bin/wget -O ${kvmhost_cdrompath}/ubuntu-14.04.1-server-amd64.iso http://releases.ubuntu.com/14.04.1/ubuntu-14.04.1-server-amd64.iso",
+	    creates => "${kvmhost_basepath}/cdrom/ubuntu-14.04.1-server-amd64.iso",
+	    require => File["${kvmhost_cdrompath}/"]
+	  }  
+  } elsif $defaultiso != '' and $defaultisourl != ''  {
+    exec {"donload-${defaultiso}":
+      command => "/usr/bin/wget -O ${kvmhost_cdrompath}/${defaultiso} ${defaultisourl}",
+      creates => "${kvmhost_cdrompath}/${defaultiso}",
+      require => File["${kvmhost_cdrompath}/"]
+    }     
   }
   
   /*

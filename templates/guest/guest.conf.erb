@@ -3,13 +3,13 @@
 # This file is handled by puppet, all local modifications will be lost
 #
 # (c) 2014 by w4c.at
-INTIP=<%= guestintip %>
+<%- if @guestintip -%>INTIP=<%= guestintip %><% end -%>
 <% if @guestextip then -%>EXTIP=<%= guestextip %><% end -%> 
 ARGS="-smp <%= guestcpus %> -m <%= guestmemory %> -enable-kvm -k de -cpu host"
 <% if @guestdisks.size != 0 then -%>
 DISKS=""
 <% guestdisks.to_a.each do |disk| -%>
-DISKS="$DISKS<%= disk %> "
+DISKS="$DISKS <%= disk %>"
 <% end -%>
 <% else -%>
 <% if @guest_hda -%>

@@ -20,8 +20,10 @@ class kvmhost::host(
  $dns_forwarders  = ['8.8.8.8','8.8.4.4'],
  $dns_allow_query = ['127.0.0.0/8', '192.168.0.0/16'],
  $dns_reverszone  = '',
+ $dns_nameservers = ["217.16.112.21"],
+ $dns_search      = 'jm-data.at', 
  
- $configure_net  = true,  
+ $configure_net   = true, 
  # eth0:   
  $eth0_usedhcp    = false,
  $eth0_ipv4       = $ipaddress_eth0,
@@ -39,11 +41,14 @@ class kvmhost::host(
  $br0_dhcpstart   = '192.168.100.010',
  $br0_dhcpend     = '192.168.100.099',
 
+ $configure_iptbl = true,
+
  #monit
  $monitchecks     = true,
  $monitdevices    = false,
  
  #guests
+ $configure_drbd  = false,   
  $kvm_vgname      = 'kvm',
  $kvm_vgdevices   = false,
  $kvmguest_ippre  = '',
@@ -53,10 +58,22 @@ class kvmhost::host(
 ) {
   
   package { [
-      "kvm-ipxe", "qemu-kvm", 
+      "qemu-kvm", 
       "uml-utilities","bridge-utils", 
       "nfs-common" ]:
-    ensure => latest
+    ensure => installed
+  }
+  case $lsbdistcodename {
+    'wheezy': {
+      package{"kvm":
+        ensure => installed
+      }
+    }
+    default: {
+      package{"kvm-ipxe":
+        ensure => installed
+      }
+    }
   }
   
   /* ---------------------------------------------------------
@@ -83,7 +100,9 @@ class kvmhost::host(
 	      netmask     => $eth0_netmask,
 	      network     => $eth0_network,
 	      gateway     => $eth0_gateway,
-	      up => [ "route add -net $eth0_network netmask $eth0_netmask gw $eth0_gateway eth0" ]
+	      up          => [ "route add -net $eth0_network netmask $eth0_netmask gw $eth0_gateway eth0" ],
+        dns_search  => $dns_search,
+        dns_nameservers => $dns_nameservers,	      
 	    }
  	  }
   
@@ -162,22 +181,22 @@ class kvmhost::host(
     }
   }
 
-  kvmhost::firewall { "fw_$name":
-      hostid    => $hostid,
-      bridgeif  => $br0_name,
-      bridgeip  => $br0_ipv4,
+  if $configure_iptbl {
+	  kvmhost::firewall { "fw_$name":
+	      hostid    => $hostid,
+	      bridgeif  => $br0_name,
+	      bridgeip  => $br0_ipv4,
+	  }
   }
-
-  kvmhost::drbd { "drbd_$name":
-
-  }
+	 
 
   /* ---------------------------------------------------------
    * monit
    * --------------------------------------------------------- */  
   
   if $monitchecks and defined(Class['Monit']) {	  
-    if $monitdevices {
+    
+    if $monitdevices and is_hash($monitdevices) {
       create_resources(monit::check::device,$monitdevices)        
     }  
     
@@ -198,13 +217,20 @@ class kvmhost::host(
    * guests
    * ------------------------------------------------ */
 
+  if $configure_drbd {
+	  # @todo drbd
+	  kvmhost::drbd { "drbd_$name":
+	
+	  }
+  }
+  
   if $kvm_vgdevices {
     lvm::volume_group { "${kvm_vgname}":
       physical_volumes => $kvm_vgdevices
     }
   }
 
-  if $kvmguests {
+  if $kvmguests and is_hash($kvmguests) {
     $kvmguestdefaults = {
       monitchecks     => $monitchecks,
       gateway         => $br0_ipv4,
