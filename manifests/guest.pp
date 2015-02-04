@@ -37,8 +37,6 @@ define kvmhost::guest(
   $dnsMadeEasyPasswd = false,
   $dnsMadeEasyUrl = "http://www.dnsmadeeasy.com/servlet/updateip",
   
-  
-  
 ) {
 
   $kvmhost_etcpath  = $::kvmhost::kvmhost_etcpath
@@ -70,12 +68,11 @@ define kvmhost::guest(
     content => template("kvmhost/guest/guest.ifdown.erb"),
   }
 
-/*
   if $config_dhcp and defined("dhcp::server") {
     dhcp::server::host {"${name}":
         address   => $guestintip,
         hwaddress => $guestmacaddr,
     }    
   }
-*/
+  
 }

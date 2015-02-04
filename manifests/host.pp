@@ -194,23 +194,27 @@ class kvmhost::host(
    * monit
    * --------------------------------------------------------- */  
   
-  if $monitchecks and defined(Class['Monit']) {	  
+  if $monitchecks  {	  
     
-    if $monitdevices and is_hash($monitdevices) {
-      create_resources(monit::check::device,$monitdevices)        
-    }  
-    
-    monit::predefined::checksshd { "sshd_${name}": 
-      sshport => $sshport
+    if defined(Class['Monit']) {
+	    if $monitdevices and is_hash($monitdevices) {
+	      create_resources(monit::check::device,$monitdevices)        
+	    }  
+	    
+	    monit::predefined::checksshd { "sshd_${name}": 
+	      sshport => $sshport
+	    }
+	    
+	    monit::predefined::checkmdadm { "mdadm_${name}": }
+	    monit::predefined::checkdrbd { "mdadm_${name}": }
+	    
+	    monit::predefined::checkbind { "bind_${name}": 
+	      listenip => $br0_ipv4
+	    }
+	    monit::predefined::checkiscdhcp { "dhcp_${name}": }
+    } else {
+      notify{"class monit not definde":}
     }
-    
-    monit::predefined::checkmdadm { "mdadm_${name}": }
-    monit::predefined::checkdrbd { "mdadm_${name}": }
-    
-    monit::predefined::checkbind { "bind_${name}": 
-      listenip => $br0_ipv4
-    }
-    monit::predefined::checkiscdhcp { "dhcp_${name}": }
   }
   
   /* ------------------------------------------------

@@ -3,8 +3,8 @@
 # This file is handled by puppet, all local modifications will be lost
 #
 # (c) 2014 by w4c.at
-<%- if @guestintip -%>INTIP=<%= guestintip %><% end -%>
-<% if @guestextip then -%>EXTIP=<%= guestextip %><% end -%> 
+<%- if @guestintip %>INTIP=<%= guestintip %><% end %>
+<%- if @guestextip %>EXTIP=<%= guestextip %><% end %> 
 ARGS="-smp <%= guestcpus %> -m <%= guestmemory %> -enable-kvm -k de -cpu host"
 <% if @guestdisks.size != 0 then -%>
 DISKS=""
