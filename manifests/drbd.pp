@@ -8,7 +8,7 @@
 # before the class is included, for example:
 #
 
-define kvmhost::drbd {
+class kvmhost::drbd {
   package { 'drbd':
 	 ensure => present,
 	 name => 'drbd8-utils',
@@ -21,14 +21,15 @@ define kvmhost::drbd {
 }
 
 define kvmhost::drbdResource(
-  $ensure     = present,
-  $minor      = undef,
-  $disk       = undef,
+  $ensure         = present,
+  $minor          = undef,
+  $disk           = false,
   $drbdMasterName = undef,
   $drbdMasterIp   = undef,
   $drbdSlaveName  = undef,
   $drbdSlaveIp    = undef
 ) {
+    
   file {"/etc/drbd.d/$name.res":
     ensure  => $ensure,
     owner   => "root",

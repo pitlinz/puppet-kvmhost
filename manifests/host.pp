@@ -17,11 +17,12 @@ class kvmhost::host(
  $install_dnssrv  = true,
  $install_dhcpsrv = true,
  $lan_domain      = 'localnet',
+ $lan_name        = '',
  $dns_forwarders  = ['8.8.8.8','8.8.4.4'],
- $dns_allow_query = ['127.0.0.0/8', '192.168.0.0/16'],
+ $dns_allow_query = ['127.0.0.0/8', '192.0.0.0/8'],
  $dns_reverszone  = '',
- $dns_nameservers = ["217.16.112.21"],
- $dns_search      = 'jm-data.at', 
+ $dns_nameservers = ["8.8.8.8"],
+ $dns_search      = 'network.tld', 
  
  $configure_net   = true, 
  # eth0:   
@@ -32,14 +33,16 @@ class kvmhost::host(
  $eth0_broadcast  = '',
  $eth0_gateway    = '',
  
- # br0:
- $br0_name        = 'kvmbr0',
- $br0_ipv4        = '192.168.100.1',    
- $br0_netmask     = '255.255.255.0',
- $br0_network     = '192.168.100.0',
- $br0_broadcast   = '192.168.100.255',
- $br0_dhcpstart   = '192.168.100.010',
- $br0_dhcpend     = '192.168.100.099',
+ $eth0_aliases    = false,
+ 
+ # br0: 
+ $br_name        = 'kvmbr0',
+ $br_ipv4        = '192.168.100.1',    
+ $br_netmask     = '255.255.255.0',
+ $br_network     = '192.168.100.0',
+ $br_broadcast   = '192.168.100.255',
+ $br_dhcpstart   = '192.168.100.010',
+ $br_dhcpend     = '192.168.100.099',
 
  $configure_iptbl = true,
 
@@ -104,19 +107,28 @@ class kvmhost::host(
         dns_search  => $dns_search,
         dns_nameservers => $dns_nameservers,	      
 	    }
+	    
+	    if is_hash($eth0_aliases) {
+	      $eth0_aliases_defaults = {
+	        auto        => true,
+          netmask     => $eth0_netmask,
+          network     => $eth0_network,	        
+	      }
+	      create_resources(network::interface,$eth0_aliases,$eth0_aliases_defaults) 
+	    }
  	  }
   
-	  network::interface { "$br0_name":
+	  network::interface { "$br_name":
 	    auto => true,
-	    ipaddress => $br0_ipv4,
-	    netmask => $br0_netmask,
-	    network => $br0_network,
+	    ipaddress => $br_ipv4,
+	    netmask => $br_netmask,
+	    network => $br_network,
 	    pre_up => [
-	      "/sbin/brctl addbr ${br0_name}",
+	      "/sbin/brctl addbr ${br_name}",
 	      "echo 1 > /proc/sys/net/ipv4/ip_forward"
 	    ],
 	    post_down => [
-	      "post-down /sbin/brctl delbr ${br0_name}"
+	      "post-down /sbin/brctl delbr ${br_name}"
 	    ]
 	  }
   }
@@ -127,16 +139,22 @@ class kvmhost::host(
 	  dns::server::options {'/etc/bind/named.conf.options':
 	    forwarders => $dns_forwarders,
 	    allow_query => $dns_allow_query,
-	    listen_on => [ $br0_ipv4 ],
+	    listen_on => [ $br_ipv4 ],
 	    listen_on_v6 => [],
 	  }
 	  
+    if $lan_name == '' {
+      $hostname = "host-${hostid}"
+    } else {
+      $hostname = $lan_name
+    }	  
+	  
 	  if !defined($global_dns_nameservers) {
-	    $global_dns_nameservers = [ "${name}.${lan_domain}" ]
+	    $global_dns_nameservers = [ "${hostname}.${lan_domain}" ]
 	  }  
 	  
 	  if (!defined($global_dns_soa) or ($global_dns_soa == '')) {   
-	    $global_dns_soa = "${name}.${lan_domain}"
+	    $global_dns_soa = "${hostname}.${lan_domain}"
 	  }
 	  
 	  
@@ -147,13 +165,7 @@ class kvmhost::host(
 			    soa_email => "root.${lan_domain}",
 			    nameservers => $global_dns_nameservers 
 			  }  
-	    }
-	    
-	    dns::record::a { "${name}":
-	      zone  => $lan_domain,
-	      data  => $br0_ipv4,
-	      ptr   => true
-	    }
+	    }	   
 	  }
 	  
 	  if $dns_reverszone != '' {
@@ -163,20 +175,32 @@ class kvmhost::host(
 	        soa_email => "root.${global_dns_soa}",
 	        nameservers => $global_dns_nameservers          
 	      }
-	    }  
+	    }   
+	    $dns_a_ptr = true
+	  } else {
+	    notify{"no dns_reversezone set":}
+	    $dns_a_ptr = false 
 	  }
+	 	  
+    dns::record::a { "${hostname}":
+      zone  => $lan_domain,
+      data  => $br_ipv4,
+      ptr   => $dns_a_ptr
+    }	  
 	  
 	  if $install_dhcpsrv {
-		  include dhcp::server
+	    class {"dhcp::server":
+        interfaces => $br_name	      
+	    }
 	
-		  dhcp::server::subnet { "${br0_network}":
-		    netmask     => $br0_netmask,
-		    routers     => $br0_ipv4,
-		    broadcast   => $br0_broadcast,
-		    range_begin => $br0_dhcpstart,
-		    range_end   => $br0_dhcpend,
+		  dhcp::server::subnet { "${br_network}":
+		    netmask     => $br_netmask,
+		    routers     => $br_ipv4,
+		    broadcast   => $br_broadcast,
+		    range_begin => $br_dhcpstart,
+		    range_end   => $br_dhcpend,
 		    domain_name => $lan_domain,
-		    dns_servers => [$br0_ipv4],     
+		    dns_servers => [$br_ipv4],     
 		  }
     }
   }
@@ -184,8 +208,8 @@ class kvmhost::host(
   if $configure_iptbl {
 	  kvmhost::firewall { "fw_$name":
 	      hostid    => $hostid,
-	      bridgeif  => $br0_name,
-	      bridgeip  => $br0_ipv4,
+	      bridgeif  => $br_name,
+	      bridgeip  => $br_ipv4,
 	  }
   }
 	 
@@ -209,7 +233,7 @@ class kvmhost::host(
 	    monit::predefined::checkdrbd { "mdadm_${name}": }
 	    
 	    monit::predefined::checkbind { "bind_${name}": 
-	      listenip => $br0_ipv4
+	      listenip => $br_ipv4
 	    }
 	    monit::predefined::checkiscdhcp { "dhcp_${name}": }
     } else {
@@ -223,9 +247,7 @@ class kvmhost::host(
 
   if $configure_drbd {
 	  # @todo drbd
-	  kvmhost::drbd { "drbd_$name":
-	
-	  }
+	  class {"kvmhost::drbd": }
   }
   
   if $kvm_vgdevices {
@@ -237,7 +259,7 @@ class kvmhost::host(
   if $kvmguests and is_hash($kvmguests) {
     $kvmguestdefaults = {
       monitchecks     => $monitchecks,
-      gateway         => $br0_ipv4,
+      gateway         => $br_ipv4,
       ippre           => $kvmguest_ippre,
       extip           => $eth0_ipv4,
       domain          => $lan_domain,      

@@ -6,7 +6,7 @@
 #
 
 define kvmhost::guest(
-  $ensure = present,
+  $ensure       = present,
   $vncid        = "",
   $autostart    = false,
   $guestcpus    = "1",
