@@ -15,7 +15,9 @@ define kvmhost::guest(
   #network params    
   $guestintip   = false,
   $guestmacaddr = undef,
+  $hostbrname   = "${kvmhost::host::br_name}",
   $guestextip   = undef,
+  $hostexitif   = "eth0",
   $fwnat        = [],
   $fwfilter     = [],
   $config_dhcp  = true,

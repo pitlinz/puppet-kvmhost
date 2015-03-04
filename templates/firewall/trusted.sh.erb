@@ -1,0 +1,20 @@
+#!/bin/bash
+#
+# initial trusted network settings
+
+case "$1" in
+	start)
+		iptables -N TRUSTED
+		iptables -A INPUT -j TRUSTED
+		iptables -A FORWARD -j TRUSTED	
+<%- if trustedips.size != 0 then -%>
+	<%- trustedips.to_a.each do |net| -%>
+	  	iptables -A TRUSTED -s <%= net %> -j ACCEPT	  	
+	<% end -%>
+<% end -%>  			
+	;;
+	stop)
+
+	
+	;;
+esac

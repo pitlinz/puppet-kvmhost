@@ -17,7 +17,8 @@ class kvmhost (
   $defaultiso       = 'ubuntu-14.04.1-server-amd64.iso',
   $defaultisourl    = '',
   $ifprefix         = '',
-  $def_bridgename   = 'br0',
+  $def_bridgename   = '',
+  $extif            = 'eth0',
   $piddir           = ''
 ) {
 
@@ -131,26 +132,4 @@ class kvmhost (
     mode    => '0400',
     content => template("kvmhost/includes/checknetwork.sh.erb"),
   }
-
-  file { "${kvmhost_basepath}/bin/init.sh":
-    owner   => "root",
-    group   => "root",
-    mode    => '0550',
-    content => template("kvmhost/init.sh.erb"),
-  }
-
-  file { "${kvmhost_basepath}/bin/ifup.sh":
-    owner   => "root",
-    group   => "root",
-    mode    => '0555',
-    content => template("kvmhost/ifup.sh.erb"),
-  }
-
-  file { "${kvmhost_basepath}/bin/ifdown.sh":
-    owner   => "root",
-    group   => "root",
-    mode    => '0555',
-    content => template("kvmhost/ifdown.sh.erb"),
-  }
-
 }

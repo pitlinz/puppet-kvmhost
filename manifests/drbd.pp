@@ -21,15 +21,14 @@ class kvmhost::drbd {
 }
 
 define kvmhost::drbdResource(
-  $ensure         = present,
-  $minor          = undef,
-  $disk           = false,
+  $ensure     = present,
+  $minor      = undef,
+  $disk       = undef,
   $drbdMasterName = undef,
   $drbdMasterIp   = undef,
   $drbdSlaveName  = undef,
   $drbdSlaveIp    = undef
 ) {
-    
   file {"/etc/drbd.d/$name.res":
     ensure  => $ensure,
     owner   => "root",

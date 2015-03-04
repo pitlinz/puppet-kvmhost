@@ -25,6 +25,8 @@ class kvmhost::host(
  $dns_search      = 'network.tld', 
  
  $configure_net   = true, 
+ $extif           = "eth0",
+
  # eth0:   
  $eth0_usedhcp    = false,
  $eth0_ipv4       = $ipaddress_eth0,
@@ -35,14 +37,16 @@ class kvmhost::host(
  
  $eth0_aliases    = false,
  
- # br0: 
+ # br0:  
  $br_name        = 'kvmbr0',
  $br_ipv4        = '192.168.100.1',    
  $br_netmask     = '255.255.255.0',
  $br_network     = '192.168.100.0',
+ $br_networksize = '24',
  $br_broadcast   = '192.168.100.255',
  $br_dhcpstart   = '192.168.100.010',
  $br_dhcpend     = '192.168.100.099',
+ $br_dhcpdns     = '192.168.100.1',
 
  $configure_iptbl = true,
 
@@ -78,6 +82,18 @@ class kvmhost::host(
       }
     }
   }
+  
+  if !defined(Class["kvmhost"]) {
+    class {"kvmhost":
+    }
+  }
+  
+  class {"kvmhost::host::initscripts":
+    extif       => $extif,
+    bridgename  => $br_name,
+    localnet    => "${br_network}/${br_networksize}",
+    require     => Class["kvmhost"],
+  }  
   
   /* ---------------------------------------------------------
    * Networking
@@ -200,12 +216,12 @@ class kvmhost::host(
 		    range_begin => $br_dhcpstart,
 		    range_end   => $br_dhcpend,
 		    domain_name => $lan_domain,
-		    dns_servers => [$br_ipv4],     
+		    dns_servers => $br_dhcpdns,     
 		  }
     }
   }
 
-  if $configure_iptbl {
+  if $configure_iptbl and !defined(Kvmhost::Firewall["fw_$name"]) {
 	  kvmhost::firewall { "fw_$name":
 	      hostid    => $hostid,
 	      bridgeif  => $br_name,

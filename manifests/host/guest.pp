@@ -51,7 +51,8 @@ define kvmhost::host::guest (
     guestdisks    => $diskoptions,
     fwnat         => $fwnat,
     fwfilter      => $fwfilter,
-    isoimage      => $isoimage
+    isoimage      => $isoimage,
+    require       => Class["kvmhost::host"],
   }
   
   if $config_dhcp {

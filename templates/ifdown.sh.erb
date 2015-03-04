@@ -25,23 +25,22 @@ if [ "x$VNCID" == "x" ]; then
 fi
 
 if [ "x$EXTIP" == "x" ]; then
-        EXTIP=`ifconfig eth0 | grep "inet addr" | cut -f2 -d':' | cut -f1 -d' '`
+        EXTIP=`ifconfig <%= extif %> | grep "inet addr" | cut -f2 -d':' | cut -f1 -d' '`
 fi
 
 if [ "x$INTIP" != "x" ]; then
 	/sbin/iptables -D FORWARD -s $INTIP/32 -j ACCEPT
 
-	if [ $VNCID -gt 0 -a $VNCID -lt 100 ]; then
-		/sbin/iptables -D FORWARD -d $INTIP/32 -p tcp --dport 22 -j ACCEPT
-		/sbin/iptables -t nat -D PREROUTING -i eth0 -p tcp --dport 22$VNCID -j DNAT --to-destination $INTIP:22
-	fi
+	let SSHPORT=2200+$VNCID
+	/sbin/iptables -D FORWARD -d $INTIP/32 -p tcp --dport 22 -j ACCEPT
+	/sbin/iptables -t nat -D PREROUTING -i <%= extif %> -p tcp --dport $SSHPORT -j DNAT --to-destination $INTIP:22
 
-	/sbin/iptables -t nat -D POSTROUTING -s $INTIP/32 -d 192.168.0.0/16 -j ACCEPT
-	/sbin/iptables -t nat -D KVMPOSTROUTING -s $INTIP/32 -j SNAT --to $EXTIP
+	/sbin/iptables -t nat -D POSTROUTING -s $INTIP/32 -d <%= localnet %> -j ACCEPT
+	/sbin/iptables -t nat -D KVMPOSTROUTING -s $INTIP/32 -o <%= extif %> -j SNAT --to $EXTIP
 fi
         
 if [ -n "$1" ];then
-	/sbin/brctl delif <%= kvmhost_brigename %> $1
+	/sbin/brctl delif <%= bridgename %> $1
 	/sbin/ifconfig $1 down
 	/usr/sbin/tunctl -d $1	
 	rm <%= kvmhost_piddir %>/$CONF.tap

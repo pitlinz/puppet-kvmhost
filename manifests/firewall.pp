@@ -17,45 +17,45 @@ define kvmhost::firewall(
   $vlan_net = "192.168.0.0/16",
   $sshport = "2200",
 
-  $extif   = "eth0"
+  $extif   = "eth0",
+  
+  $trustedips = [],
+  
 ) {
 
-  file {"/etc/firewall":
-    ensure => directory,
-    owner   => "root",
-    group   => "root",
-    mode    => 0750,
-  }
+  if !defined(File["/etc/firewall"]) {
+	  file {"/etc/firewall":
+	    ensure => directory,
+	    owner   => "root",
+	    group   => "root",
+	    mode    => 0750,
+	  }
+	
+	  file {"/etc/firewall/000-init.sh":
+	    ensure  => $ensure,
+	    owner   => "root",
+	    group   => "root",
+	    mode    => 0550,
+	    content => template("kvmhost/firewall/init.sh.erb"),
+	  }
+	  
+	  file {"/etc/firewall/010-routing.sh":
+	    ensure  => $ensure,
+	    owner   => "root",
+	    group   => "root",
+	    mode    => 0550,
+	    content => template("kvmhost/firewall/routing.sh.erb"),
+	  }  
+	  
+	  file {"/etc/init.d/kvmfirewall":
+	    ensure  => $ensure,
+	    owner   => "root",
+	    group   => "root",
+	    mode    => 0550,
+	    content => template("kvmhost/firewall/kvmfirewall.erb"),
+	    require => File["/etc/firewall/000-init.sh","/etc/firewall/010-routing.sh"]
+	  }
+  }	  
 
-  file {"/etc/firewall/000-init.sh":
-    ensure  => $ensure,
-    owner   => "root",
-    group   => "root",
-    mode    => 0550,
-    content => template("kvmhost/firewall/init.sh.erb"),
-  }
-  
-  file {"/etc/firewall/010-routing.sh":
-    ensure  => $ensure,
-    owner   => "root",
-    group   => "root",
-    mode    => 0550,
-    content => template("kvmhost/firewall/routing.sh.erb"),
-  }  
-  
-  file {"/etc/init.d/kvmfirewall":
-    ensure  => $ensure,
-    owner   => "root",
-    group   => "root",
-    mode    => 0550,
-    content => template("kvmhost/firewall/kvmfirewall.erb"),
-    require => File["/etc/firewall/000-init.sh","/etc/firewall/010-routing.sh"]
-  }
-  
-  file {"/etc/rc2.d/S80-kvmfirewall":
-    ensure => link,
-    target => "/etc/init.d/kvmfirewall",
-    require=> File['/etc/init.d/kvmfirewall']
-  }
 
 }
