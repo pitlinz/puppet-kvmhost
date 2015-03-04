@@ -64,24 +64,7 @@ class kvmhost::host(
  
 ) {
   
-  package { [
-      "qemu-kvm", 
-      "uml-utilities","bridge-utils", 
-      "nfs-common" ]:
-    ensure => installed
-  }
-  case $lsbdistcodename {
-    'wheezy': {
-      package{"kvm":
-        ensure => installed
-      }
-    }
-    default: {
-      package{"kvm-ipxe":
-        ensure => installed
-      }
-    }
-  }
+
   
   if !defined(Class["kvmhost"]) {
     class {"kvmhost":

@@ -22,6 +22,25 @@ class kvmhost (
   $piddir           = ''
 ) {
 
+  package { [
+      "qemu-kvm", 
+      "uml-utilities","bridge-utils", 
+      "nfs-common" ]:
+    ensure => installed
+  }
+  case $lsbdistcodename {
+    'wheezy': {
+      package{"kvm":
+        ensure => installed
+      }
+    }
+    default: {
+      package{"kvm-ipxe":
+        ensure => installed
+      }
+    }
+  }
+
   case $basepath {
     '': { $kvmhost_basepath = "/srv/kvm" }
     default: { $kvmhost_basepath = "${basepath}" }
