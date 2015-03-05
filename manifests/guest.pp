@@ -84,7 +84,7 @@ define kvmhost::guest(
       } else {
         $arecPtr = false
       }
-	    dns::record::a { "${name}.${::kvmhost::host::lan_domain}":
+	    dns::record::a { "${name}":
 	      zone  => $::kvmhost::host::lan_domain,
 	      data  => $guestintip,
 	      ptr   => $arecPtr
