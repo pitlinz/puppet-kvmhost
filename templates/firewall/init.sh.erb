@@ -32,7 +32,7 @@ case "$1" in
 		iptables -A INPUT -p tcp --dport 22 -j ACCEPT
 		
 		iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
-		iptables -A FORWARD -s <%= vlan_net %>  -d <%= vlan_net %>  ! -i eth0 -j ACCEPT
+		iptables -A FORWARD -s <%= vlan_net %>  -d <%= vlan_net %>  ! -i <%= extif %> -j ACCEPT
 		;;
 	stop)
 		# Set chain policies
