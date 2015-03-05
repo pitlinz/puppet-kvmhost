@@ -47,6 +47,14 @@ define kvmhost::firewall(
 	    content => template("kvmhost/firewall/routing.sh.erb"),
 	  }  
 	  
+    file {"/etc/firewall/020-trusted.sh":
+      ensure  => $ensure,
+      owner   => "root",
+      group   => "root",
+      mode    => 0550,
+      content => template("kvmhost/firewall/trusted.sh.erb"),
+    }  	  
+	  
 	  file {"/etc/init.d/kvmfirewall":
 	    ensure  => $ensure,
 	    owner   => "root",
@@ -55,6 +63,13 @@ define kvmhost::firewall(
 	    content => template("kvmhost/firewall/kvmfirewall.erb"),
 	    require => File["/etc/firewall/000-init.sh","/etc/firewall/010-routing.sh"]
 	  }
+	  
+	  exec {"update-rc-kvmfirewall":
+	    command => "/usr/sbin/update-rc.d kvmfirewall defaults",
+      creates => "/etc/rc2.d/S02kvmfirewall",
+      require => File["/etc/init.d/kvmfirewall"]
+    }
+	  
   }	  
 
 
