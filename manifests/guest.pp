@@ -77,4 +77,19 @@ define kvmhost::guest(
     }    
   }
   
+  if ($::kvmhost::host::lan_domain != "localnet") and $guestintip {
+    if defined(::Dns::Zone[$::kvmhost::host::lan_domain]) {
+      if defined(::Dns::Zone[ $::kvmhost::host::dns_reverszone ]) {
+        $arecPtr = true
+      } else {
+        $arecPtr = false
+      }
+	    dns::record::a { "${name}.${::kvmhost::host::lan_domain}":
+	      zone  => $::kvmhost::host::lan_domain,
+	      data  => $guestintip,
+	      ptr   => $arecPtr
+	    }       
+    }    
+  } 
+  
 }
