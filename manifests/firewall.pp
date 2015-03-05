@@ -66,7 +66,7 @@ define kvmhost::firewall(
 	  
 	  exec {"update-rc-kvmfirewall":
 	    command => "/usr/sbin/update-rc.d kvmfirewall defaults",
-      creates => "/etc/rc2.d/S02kvmfirewall",
+      unless => "[ -f /etc/rc2.d/*kvmfirewall ]",
       require => File["/etc/init.d/kvmfirewall"]
     }
 	  
