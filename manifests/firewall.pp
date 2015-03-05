@@ -61,13 +61,14 @@ define kvmhost::firewall(
 	    group   => "root",
 	    mode    => 0550,
 	    content => template("kvmhost/firewall/kvmfirewall.erb"),
-	    require => File["/etc/firewall/000-init.sh","/etc/firewall/010-routing.sh"]
+	    require => File["/etc/firewall/000-init.sh","/etc/firewall/010-routing.sh"],
+	    notify  => Exec["update-rc-kvmfirewall"],
 	  }
 	  
 	  exec {"update-rc-kvmfirewall":
 	    command => "/usr/sbin/update-rc.d kvmfirewall defaults",
-      unless => "/bin/ls etc/rc2.d/*kvmfirewall",
-      require => File["/etc/init.d/kvmfirewall"]
+      require => File["/etc/init.d/kvmfirewall"],
+      refreshonly => true
     }
 	  
   }	  
