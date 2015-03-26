@@ -1,0 +1,9 @@
+#!/bin/bash
+
+PATH=`dirname $0`
+
+if [ "x$1" == "x" ]; then
+	echo "usage: $0 vnodename"
+else 
+	$PATH/init.sh start $1
+fi

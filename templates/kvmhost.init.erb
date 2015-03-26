@@ -1,0 +1,40 @@
+#!/bin/bash
+#
+# init the firewall
+
+### BEGIN INIT INFO
+# Provides:			kvmhost 
+# Required-Start:	$network $syslog $remote_fs kvmfirewall 
+# Required-Stop:	$network $syslog $remote_fs kvmfirewall
+# Should-Start:		$named isc-dhcp-server nfs-kernel-server
+# Should-Stop:		$named nfs-kernel-server
+# Default-Start:	2 3 4 5
+# Default-Stop:		0 1 6
+# Short-Description: virtual nodes 
+# Description:		starts kvm vnodes defined to autostart
+### END INIT INFO
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+KVMBIN=<%= kvmhost_basepath %>/bin/init.sh
+KVMETC=<%= kvmhost_etcpath %>
+if [ ! -d ${KVMETC}/autostart ]; then
+	mkdir -p ${KVMETC}/autostart
+fi
+
+case "$1" in
+	start)
+		for ASCONF in `ls ${KVMETC}/autostart/*.conf`; do
+			$KVMBIN start `basename $ASCONF`
+		done	
+		;;
+	stop)
+		for ASCONF in `ls ${KVMETC}/autostart/*.conf`; do
+			$KVMBIN killhost `basename $ASCONF`
+		done	
+		;;
+	savestop)
+		for ASCONF in `ls ${KVMETC}/autostart/*.conf`; do
+			$KVMBIN stop `basename $ASCONF`
+		done	
+		;;	
+esac

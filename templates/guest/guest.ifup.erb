@@ -2,8 +2,8 @@
 
 CONF=`basename $0 | cut -f1 -d'.'`
 
-. <%= kvmhost_etcpath %>/$CONF.conf
-. <%= kvmhost_basepath %>/bin/ifup.sh 
+. <%= @etcpath %>/$CONF.conf
+. <%= @basepath %>/bin/ifup.sh 
 
 <% if @fwnat.size != 0 then -%><% fwnat.to_a.each do |fwrule| -%>
 /sbin/iptables -t nat -A <%= fwrule %>

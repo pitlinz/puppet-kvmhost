@@ -21,12 +21,12 @@ if [ "x$VNCID" == "x" ]; then
 fi
 
 if [ "x$MACADDR" == "x" ]; then
-	MACADDR=`facter | grep macaddress_<%= kvmhost_brigename %> | cut -f3 -d' ' | cut -f1-3 -d':'`
+	MACADDR=`facter | grep macaddress_<%= bridgename %> | cut -f3 -d' ' | cut -f1-3 -d':'`
 	MACADDR="$MACADDR:00:00:$VNCID"
 fi
 
 if [ "x$TAP" == "x" ]; then 
-	TAP="<%= kvmhost_ifprefix %>$VNCID"
+	TAP="<%= sysprefix %>$VNCID"
 fi
 
 if [ "x$NICMODEL" == "x" ]; then

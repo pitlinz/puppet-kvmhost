@@ -7,7 +7,9 @@
 
 . /etc/environment
 
-mkdir -p /var/run/kvm
+if [ ! -d <%= @kvmhost_piddir %> ]; then
+	mkdir -p <%= @kvmhost_piddir %>
+fi
 
 if [ "x$2" == "x" ]; then
 	echo "usage $0 cmd confname"
@@ -71,10 +73,12 @@ case "$1" in
 			echo "waiting shutdown .... $WAITCOUNT"
        	done;
 		
-		$0 killhost $2
+		$0 killnode $2
 		;;
-
 	killhost)
+		$0 killnode $2
+		;;
+	killnode)
 		PID=`ps aux | grep kvm | grep $2 | grep " \:$VNCID " | cut -b 8-15 | tr -d ' '`
 		if [ "x$PID" != "x" ]; then
 			kill -9 $PID

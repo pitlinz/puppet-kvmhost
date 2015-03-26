@@ -7,71 +7,59 @@
 # To set any of the following, simply set them as variables in your manifests
 # before the class is included, for example:
 #
-# requires puppet module install example42-network
+
 
 define kvmhost::firewall(
-  $ensure = present,
-  $bridgeif = "br0",
-  $bridgeip = undef,
-  $hostid  = "00",
-  $vlan_net = "192.168.0.0/16",
-  $sshport = "2200",
+	$ensure 	= present,
+	$hostid  	= "00",
+	$trustedips = [],
+	$routes	  	= [],
+	$sshport	= "2200"
 
-  $extif   = "eth0",
-  
-  $trustedips = [],
-  
 ) {
+	$bridgeif 	= $::kvmhost::def_bridgename
+	$extif 		= $::kvmhost::extif
+	$vlan_net	= $::kvmhost::localnet
 
-  if !defined(File["/etc/firewall"]) {
-	  file {"/etc/firewall":
-	    ensure => directory,
-	    owner   => "root",
-	    group   => "root",
-	    mode    => 0750,
-	  }
-	
-	  file {"/etc/firewall/000-init.sh":
-	    ensure  => $ensure,
-	    owner   => "root",
-	    group   => "root",
-	    mode    => 0550,
+	File{
+		ensure  => $ensure,
+	    owner   => 'root',
+	    group   => 'root',
+	    mode    => '0550',
+	}
+
+  	if !defined(File["/etc/firewall"]) {
+		file {"/etc/firewall":
+	    	ensure => directory,
+	    	mode    => '0750',
+	  	}
+	}
+
+	file {"/etc/firewall/000-init.sh":
 	    content => template("kvmhost/firewall/init.sh.erb"),
-	  }
-	  
-	  file {"/etc/firewall/010-routing.sh":
-	    ensure  => $ensure,
-	    owner   => "root",
-	    group   => "root",
-	    mode    => 0550,
-	    content => template("kvmhost/firewall/routing.sh.erb"),
-	  }  
-	  
+	}
+
+	file {"/etc/firewall/010-routing.sh":
+		content => template("kvmhost/firewall/routing.sh.erb"),
+	}
+
     file {"/etc/firewall/020-trusted.sh":
-      ensure  => $ensure,
-      owner   => "root",
-      group   => "root",
-      mode    => 0550,
-      content => template("kvmhost/firewall/trusted.sh.erb"),
-    }  	  
-	  
-	  file {"/etc/init.d/kvmfirewall":
-	    ensure  => $ensure,
-	    owner   => "root",
-	    group   => "root",
-	    mode    => 0550,
-	    content => template("kvmhost/firewall/kvmfirewall.erb"),
-	    require => File["/etc/firewall/000-init.sh","/etc/firewall/010-routing.sh"],
-	    notify  => Exec["update-rc-kvmfirewall"],
-	  }
-	  
-	  exec {"update-rc-kvmfirewall":
-	    command => "/usr/sbin/update-rc.d kvmfirewall defaults",
-      require => File["/etc/init.d/kvmfirewall"],
-      refreshonly => true
+		ensure  => $ensure,
+		owner   => "root",
+		group   => "root",
+		mode    => "0550",
+		content => template("kvmhost/firewall/trusted.sh.erb"),
     }
-	  
-  }	  
 
+	file {"/etc/init.d/kvmfirewall":
+		content => template("kvmhost/firewall/kvmfirewall.erb"),
+		require => File["/etc/firewall/000-init.sh","/etc/firewall/010-routing.sh"],
+		notify  => Exec["update-rc-kvmfirewall"],
+	}
 
+	exec {"update-rc-kvmfirewall":
+		command => "/usr/sbin/update-rc.d kvmfirewall defaults",
+		require => File["/etc/init.d/kvmfirewall"],
+		refreshonly => true
+    }
 }
