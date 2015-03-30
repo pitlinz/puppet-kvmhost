@@ -12,9 +12,17 @@ case "$1" in
 	  	iptables -A TRUSTED -s <%= net %> -j ACCEPT	  	
 	<% end -%>
 <% end -%>  			
-	;;
+		;;
 	stop)
-
-	
-	;;
+		iptables -A INPUT -j TRUSTED
+		iptables -A FORWARD -j TRUSTED	
+		iptables -F TRUSTED
+		iptables -X TRUSTED		
+		;;
+	restart)
+		$0 stop
+		$0 start
+		;;
 esac
+
+

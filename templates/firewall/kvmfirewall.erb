@@ -21,10 +21,9 @@ case "$1" in
 		done;
 		;;
 	stop)
-		for SCRIPT in `ls /etc/firewall/*init-vlan*.sh`; do
+		for SCRIPT in `ls -r /etc/firewall/*.sh`; do
 			 $SCRIPT stop
 		done;		
-		/etc/firewall/000-init.sh stop
 		;;
 	restart)
 		$0 stop

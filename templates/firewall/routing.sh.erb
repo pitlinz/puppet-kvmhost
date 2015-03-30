@@ -5,9 +5,11 @@
 case "$1" in
 	start)
 		echo 1 > /proc/sys/net/ipv4/ip_forward
-		iptables -t nat -A POSTROUTING -s <%= vlan_net %> -o <%= bridgeif %> -j ACCEPT
+		iptables -t nat -N KVMPREROUTING
+		iptables -t nat -A PREROUTING -i <%= extif %> -j KVMPREROUTING
 		iptables -t nat -N KVMPOSTROUTING
 		iptables -t nat -A POSTROUTING -j KVMPOSTROUTING
+		iptables -t nat -A POSTROUTING -s <%= vlan_net %> -o <%= bridgeif %> -j ACCEPT
 		iptables -t nat -A POSTROUTING -o <%= extif %> -j MASQUERADE
 		;;
 		

@@ -37,18 +37,17 @@ define kvmhost::firewall(
 
 	file {"/etc/firewall/000-init.sh":
 	    content => template("kvmhost/firewall/init.sh.erb"),
+	    require	=> File["/etc/firewall"],
 	}
 
 	file {"/etc/firewall/010-routing.sh":
 		content => template("kvmhost/firewall/routing.sh.erb"),
+		require	=> File["/etc/firewall"],
 	}
 
     file {"/etc/firewall/020-trusted.sh":
-		ensure  => $ensure,
-		owner   => "root",
-		group   => "root",
-		mode    => "0550",
 		content => template("kvmhost/firewall/trusted.sh.erb"),
+		require	=> File["/etc/firewall"],
     }
 
 	file {"/etc/init.d/kvmfirewall":
