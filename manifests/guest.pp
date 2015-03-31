@@ -69,11 +69,13 @@ define kvmhost::guest(
   	file {"${etcpath}/${name}.ifup":
 	    content => template("kvmhost/guest/guest.ifup.erb"),
 	    require => File[$etcpath],
+	    mode    => "0550",
 	}
 
   	file {"${etcpath}/${name}.ifdown":
 	    content => template("kvmhost/guest/guest.ifdown.erb"),
 	    require => File[$etcpath],
+	    mode    => "0550"
   	}
 
 /*
@@ -98,7 +100,7 @@ define kvmhost::guest(
 	    }
     }
   }
-
+*/
 
   if $autostart and $ensure == 'present' {
     file{"${etcpath}/autostart/${name}.conf":
@@ -111,5 +113,5 @@ define kvmhost::guest(
       ensure => absent
     }
   }
-*/
+
 }
