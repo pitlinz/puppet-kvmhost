@@ -4,20 +4,26 @@
 
 case "$1" in
 	start)
-		iptables -N TRUSTED
-		iptables -A INPUT -j TRUSTED
-		iptables -A FORWARD -j TRUSTED	
+		/sbin/iptables -N TRUSTED
+		/sbin/iptables -A INPUT -j TRUSTED
+		/sbin/iptables -A FORWARD -j TRUSTED	
 <%- if trustedips.size != 0 then -%>
 	<%- trustedips.to_a.each do |net| -%>
-	  	iptables -A TRUSTED -s <%= net %> -j ACCEPT	  	
+	  	/sbin/iptables -A TRUSTED -s <%= net %> -j ACCEPT	  	
 	<% end -%>
-<% end -%>  			
+<% end -%>  
+<%- if @vlan_net then -%>
+		/sbin/iptables -A INPUT -s <%= vlan_net %> -j ACCEPT 
+<% end -%>		
 		;;
 	stop)
-		iptables -A INPUT -j TRUSTED
-		iptables -A FORWARD -j TRUSTED	
-		iptables -F TRUSTED
-		iptables -X TRUSTED		
+<%- if @vlan_net then -%>
+		/sbin/iptables -D INPUT -s <%= vlan_net %> -j ACCEPT 
+<% end -%>			
+		/sbin/iptables -D INPUT -j TRUSTED
+		/sbin/iptables -D FORWARD -j TRUSTED	
+		/sbin/iptables -F TRUSTED
+		/sbin/iptables -X TRUSTED		
 		;;
 	restart)
 		$0 stop

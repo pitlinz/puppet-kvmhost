@@ -1,9 +1,7 @@
 #!/bin/bash
 
-PATH=`dirname $0`
-
 if [ "x$1" == "x" ]; then
 	echo "usage: $0 vnodename"
 else 
-	$PATH/init.sh stop $1
+	<%= kvmhost_basepath %>/bin/init.sh stop $1
 fi

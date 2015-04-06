@@ -3,7 +3,16 @@
 CONF=`basename $0 | cut -f1 -d'.'`
 
 . <%= @etcpath %>/$CONF.conf
-. <%= @basepath %>/bin/ifup.sh 
+
+if [ "x$1" == "x" ]; then
+	echo "no param specified"
+	exit 1
+elif [ "x$1" == "fwreload" ]; then
+	echo "reloading common firewall rules for $CONF"
+	. <%= @basepath %>/bin/includes/ifup-iptables.sh.inc
+else
+	. <%= @basepath %>/bin/ifup.sh
+fi 
 
 <% if @fwnat.size != 0 then -%><% fwnat.to_a.each do |fwrule| -%>
 /sbin/iptables -t nat -A <%= fwrule %>

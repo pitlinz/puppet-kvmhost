@@ -44,22 +44,10 @@ if [ -n "$1" ];then
 		if [ `cat /proc/sys/net/ipv4/ip_forward` -lt 1 ]; then
 			/sbin/sysctl -w net.ipv4.ip_forward=1
 		fi
-
-		/sbin/iptables -A FORWARD -s $INTIP/32 -j ACCEPT
-		/sbin/iptables -t nat -I POSTROUTING -s $INTIP/32 -d <%= localnet %> -j ACCEPT
-	
+		
 		let SSHPORT=2200+$VNCID
-		/sbin/iptables -A FORWARD -d $INTIP/32 -p tcp --dport 22 -j ACCEPT
-		/sbin/iptables -t nat -A PREROUTING -i <%= extif %> -p tcp --dport $SSHPORT -j DNAT --to-destination $INTIP:22
-		
-	
-		if [ `iptables -t nat -L POSTROUTING | grep -c KVMPOSTROUTING` -lt 1 ]; then
-			/sbin/iptables -t nat -N KVMPOSTROUTING 
-			/sbin/iptables -t nat -A POSTROUTING -j KVMPOSTROUTING
-		fi	
-	        
-		/sbin/iptables -t nat -A KVMPOSTROUTING -s $INTIP/32 -o <%= extif %> -j SNAT --to $EXTIP
-		
+		. <%= kvmhost_basepath %>/bin/includes/ifup-iptables.sh.inc
+		 		
 	fi        
 	echo $1 > <%= kvmhost_piddir %>/$CONF.tap
 

@@ -77,14 +77,16 @@ define kvmhost::host(
     * --------------------------------------------------------- */
 
   	if $configure_net {
-		notify{"extif: ${::kvmhost::extif}":}
-  	  	/*
 		if !$eth0_usedhcp {
 	  	  	validate_re($eth0_ipv4,'[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}')
 	  	  	validate_re($br_netmask,'[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}')
 	  	  	validate_re($br_broadcast,'[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}')
 			validate_re($eth0_gateway,'[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}')
 
+			exec{"copyOriConfigOf ${fqdn}":
+				command => "/bin/cp /etc/network/interfaces /etc/network/interfaces.back",
+				creates => "/etc/network/interfaces.back"
+			}
 
 		    network::interface {"${::kvmhost::extif}":
 				auto => true,
@@ -127,8 +129,6 @@ define kvmhost::host(
 		      "echo 0 > /proc/sys/net/ipv4/ip_forward"
 	    	]
 	  	}
-	  	*
-	  	*/
   	}
 
   	if $install_dnssrv {

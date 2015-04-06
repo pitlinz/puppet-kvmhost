@@ -29,14 +29,8 @@ if [ "x$EXTIP" == "x" ]; then
 fi
 
 if [ "x$INTIP" != "x" ]; then
-	/sbin/iptables -D FORWARD -s $INTIP/32 -j ACCEPT
-
 	let SSHPORT=2200+$VNCID
-	/sbin/iptables -D FORWARD -d $INTIP/32 -p tcp --dport 22 -j ACCEPT
-	/sbin/iptables -t nat -D PREROUTING -i <%= extif %> -p tcp --dport $SSHPORT -j DNAT --to-destination $INTIP:22
-
-	/sbin/iptables -t nat -D POSTROUTING -s $INTIP/32 -d <%= localnet %> -j ACCEPT
-	/sbin/iptables -t nat -D KVMPOSTROUTING -s $INTIP/32 -o <%= extif %> -j SNAT --to $EXTIP
+	. <%= kvmhost_basepath %>/bin/includes/ifdown-iptables.sh.inc
 fi
         
 if [ -n "$1" ];then
