@@ -17,9 +17,18 @@ define kvmhost::firewall(
 	$sshport	= "2200"
 
 ) {
-	$bridgeif 	= $::kvmhost::def_bridgename
+	$bridgeif 	= $::kvmhost::bridgename
 	$extif 		= $::kvmhost::extif
 	$vlan_net	= $::kvmhost::localnet
+
+	$piddir 	= $::kvmhost::kvmhost_piddir
+	$etcpath 	= $::kvmhost::kvmhost_etcpath
+
+	if !defined(Package["ipcalc"]) {
+		package{"ipcalc":
+		    ensure => installed
+		}
+	}
 
 	File{
 		ensure  => $ensure,
@@ -47,6 +56,11 @@ define kvmhost::firewall(
 
     file {"/etc/firewall/020-trusted.sh":
 		content => template("kvmhost/firewall/trusted.sh.erb"),
+		require	=> File["/etc/firewall"],
+    }
+
+    file {"/etc/firewall/999-kvmrunningguests.sh":
+		content => template("kvmhost/firewall/kvmrunningguests.sh.erb"),
 		require	=> File["/etc/firewall"],
     }
 

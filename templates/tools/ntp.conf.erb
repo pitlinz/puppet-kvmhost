@@ -2,7 +2,6 @@
 
 driftfile /var/lib/ntp/ntp.drift
 
-
 # Enable this if you want statistics to be logged.
 statsdir /var/log/ntpstats/
 
@@ -14,18 +13,13 @@ filegen clockstats file clockstats type day enable
 # pool.ntp.org maps to about 1000 low-stratum NTP servers.  Your server will
 # pick a different set every time it starts up.  Please consider joining the
 # pool: <http://www.pool.ntp.org/join.html>
-<%- if timeservers.size != 0 then -%>
-	<%- timeservers.to_a.each do |tsrv| -%>
-server <%= tsrv %> iburst	  	
-	<% end -%>
-<% end -%>  
+<%- if timeservers.size != 0 then -%> <%- timeservers.to_a.each do |tsrv| -%>
+server <%= tsrv %>
+<%- end -%><%- end -%>  
 
 # Use Ubuntu's ntp server as a fallback.
 server ntp.ubuntu.com iburst
-
-# NTP will synchronize against itself until the it can start synchronizing with the remote server again
-server  127.0.0.1
-fudge   127.0.0.1 stratum 10
+restrict ntp.ubuntu.com
 
 # Access control configuration; see /usr/share/doc/ntp-doc/html/accopt.html for
 # details.  The web page <http://support.ntp.org/bin/view/Support/AccessRestrictions>
@@ -42,21 +36,24 @@ restrict -6 default kod notrap nomodify nopeer noquery
 # Local users may interrogate the ntp server more closely.
 restrict 127.0.0.1
 restrict ::1
-<%- if @restrictions and restrictions.size != 0 then -%>
-	<%- restrictions.to_a.each do |restrict| -%>
-restrict <%= restrict %> iburst	  	
-	<% end -%>
-<% end -%>  
+
+# allowe servers
+<%- if timeservers.size != 0 then -%><%- timeservers.to_a.each do |tsrv| -%>
+restirct <%= tsrv %> 	
+<%- end -%><% end -%>  
 
 # Clients from thissubnet have unlimited access, but only if
 # cryptographically authenticated.
 #restrict 192.168.123.0 mask 255.255.255.0 notrust
+<%- if @restrictions and restrictions.size != 0 then -%><%- restrictions.to_a.each do |restrict| -%>
+restrict <%= restrict %> notrust	  	
+<%- end -%><%- end -%>  
 
 
 # If you want to provide time to your local subnet, change the next line.
 # (Again, the address is an example only.)
 #broadcast 192.168.123.255
-<%- if @broadcast then -%>
+<%- if @broadcast != "" then -%>
 broadcast <%= broadcast %>
 <%- end -%>
 

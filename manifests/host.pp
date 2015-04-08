@@ -20,6 +20,7 @@ define kvmhost::host(
  $dns_allow_query 	= ['127.0.0.0/8', '192.0.0.0/8'],
  $dns_nameservers 	= ["8.8.8.8"],
  $dns_search      	= 'network.tld',
+ $install_ntp		= true,
 
  $configure_net   	= true,
 
@@ -210,6 +211,14 @@ define kvmhost::host(
 	  	}
   	}
 
+
+	if $install_ntp {
+	    kvmhost::tools::ntp{"ntp_${name}":
+			restrictions => ["${br_network} netmask ${br_netmask}"],
+		}
+
+
+	}
 
   /* ---------------------------------------------------------
    * monit

@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+# generate rules out of /etc/ntpd.conf
+#
+case "$1" in
+	start)
+		/sbin/iptables -N NTP
+		/sbin/iptables -A INPUT -p udp --dport 123 -j NTP
+		/sbin/iptables -A INPUT -p tcp --dport 123 -j NTP
+		
+		;;
+	stop)
+		/sbin/iptables -D INPUT -p udp --dport 123 -j NTP
+		/sbin/iptables -D INPUT -p tcp --dport 123 -j NTP
+		/sbin/iptables -F NTP
+		/sbin/iptables -X NTP
+		;;
+esac

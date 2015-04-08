@@ -19,3 +19,4 @@ if [ "x$INTIP" != "x" ]; then
 	/sbin/iptables -t nat -A KVMPOSTROUTING -s $INTIP/32 -d <%= localnet %> -j ACCEPT        
 	/sbin/iptables -t nat -A KVMPOSTROUTING -s $INTIP/32 -o <%= extif %> -j SNAT --to $EXTIP
 fi
+

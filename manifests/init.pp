@@ -27,6 +27,7 @@ class kvmhost (
 
   $extif            = 'eth0',
   $defaultroutes	= [],
+  $installntp		= true,
 
 ) {
 
@@ -223,5 +224,4 @@ class kvmhost (
 	    require => File["/etc/init.d/kvmhost"],
 	    refreshonly => true,
   	}
-
 }

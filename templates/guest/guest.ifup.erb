@@ -4,6 +4,12 @@ CONF=`basename $0 | cut -f1 -d'.'`
 
 . <%= @etcpath %>/$CONF.conf
 
+if [ "x$SSHPORT" == "x" ]; then
+	if [ "x$VNCID" != "x" ]; then
+		let SSHPORT=2200+$VNCID
+	fi
+fi
+
 if [ "x$1" == "x" ]; then
 	echo "no param specified"
 	exit 1

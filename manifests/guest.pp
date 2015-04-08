@@ -78,7 +78,6 @@ define kvmhost::guest(
 	    mode    => "0550"
   	}
 
-/*
   if $config_dhcp and defined("dhcp::server") {
     dhcp::server::host {"${name}":
         address   => $guestintip,
@@ -100,7 +99,7 @@ define kvmhost::guest(
 	    }
     }
   }
-*/
+
 
   if $autostart and $ensure == 'present' {
     file{"${etcpath}/autostart/${name}.conf":

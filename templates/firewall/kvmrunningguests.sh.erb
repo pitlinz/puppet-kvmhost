@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# reinstall kvm host rules
+#
+
+if [ ! -d <%= piddir %> ]; then
+	exit
+fi
+
+case "$1" in 
+	start)		
+		for PIDFILE in `/bin/ls <%= piddir %>/*.pid`; do
+			PID=`cat $PIDFILE | tr -d '[[:space:]]'`
+			if [ `/bin/ps aux | grep $PID | grep -cv grep` -lt 1 ]; then 
+				continue
+			fi
+			
+			CONFNAME=`basename $PIDFILE | cut -f1 -d'.'`
+			if [ ! -f <%= etcpath %>/${CONFNAME}.ifup ]; then
+				continue
+			fi
+						
+			<%= etcpath %>/${CONFNAME}.ifup fwreload 
+		done
+		
+		;;
+	stop)
+		;;
+esac

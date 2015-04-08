@@ -16,14 +16,6 @@ fi
 
 . <%= kvmhost_etcpath %>/$CONF.conf
 
-if [ "x$VNCID" == "x" ]; then
-	VNCID=`grep INTIP <%= kvmhost_etcpath %>/$CONF.conf | cut -f4 -d'.'`
-	if [ "x$VNCID" == "x" ]; then
-		echo "no VNCID found"
-		exit 1
-	fi	
-fi
-
 if [ "x$EXTIP" == "x" ]; then
 	EXTIP=`ifconfig <%= extif %> | grep "inet addr" | cut -f2 -d':' | cut -f1 -d' '`
 elif [ `ifconfig | grep -c $EXTIP` -lt 1 ]; then
@@ -45,7 +37,6 @@ if [ -n "$1" ];then
 			/sbin/sysctl -w net.ipv4.ip_forward=1
 		fi
 		
-		let SSHPORT=2200+$VNCID
 		. <%= kvmhost_basepath %>/bin/includes/ifup-iptables.sh.inc
 		 		
 	fi        

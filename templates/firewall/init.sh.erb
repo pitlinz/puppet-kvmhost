@@ -21,7 +21,7 @@ case "$1" in
 		iptables --policy FORWARD DROP
 		
 		ip6tables --policy INPUT DROP
-		ip6tables --policy OUTPUT DROP
+		ip6tables --policy OUTPUT ACCEPT
 		ip6tables --policy FORWARD DROP
 				
 		# basic access
@@ -29,6 +29,9 @@ case "$1" in
 		iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 		iptables -A INPUT -i <%= bridgeif %> -s <%= vlan_net %> -j ACCEPT
 		iptables -A INPUT -p tcp --dport <%= sshport %> -j ACCEPT
+
+		ip6tables -A INPUT -i lo -j ACCEPT
+		ip6tables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 		
 		iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
 		iptables -A FORWARD -s <%= vlan_net %>  -d <%= vlan_net %>  ! -i <%= extif %> -j ACCEPT
