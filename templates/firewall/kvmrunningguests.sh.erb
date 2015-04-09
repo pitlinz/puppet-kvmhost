@@ -11,11 +11,18 @@ case "$1" in
 	start)		
 		for PIDFILE in `/bin/ls <%= piddir %>/*.pid`; do
 			PID=`cat $PIDFILE | tr -d '[[:space:]]'`
-			if [ `/bin/ps aux | grep $PID | grep -cv grep` -lt 1 ]; then 
+			CONFNAME=`basename $PIDFILE | cut -f1 -d'.'`
+			
+			if [ "x$PID" == "x" ]; then
+				rm  <%= piddir %>/${CONFNAME}.*
 				continue
 			fi
 			
-			CONFNAME=`basename $PIDFILE | cut -f1 -d'.'`
+			if [ `/bin/ps aux | grep $PID | grep -cv grep` -lt 1 ]; then 
+				rm  <%= piddir %>/${CONFNAME}.*
+				continue
+			fi
+			
 			if [ ! -f <%= etcpath %>/${CONFNAME}.ifup ]; then
 				continue
 			fi
