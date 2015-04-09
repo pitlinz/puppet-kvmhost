@@ -21,6 +21,11 @@ define kvmhost::host(
  $dns_nameservers 	= ["8.8.8.8"],
  $dns_search      	= 'network.tld',
  $install_ntp		= true,
+ $timeservers = [
+        'europe.pool.ntp.org',
+		'de.pool.ntp.org',
+		'ir.pool.ntp.org',
+    ],
 
  $configure_net   	= true,
 
@@ -214,6 +219,7 @@ define kvmhost::host(
 
 	if $install_ntp {
 	    kvmhost::tools::ntp{"ntp_${name}":
+	        timeservers  => $timeservers,
 			restrictions => ["${br_network} netmask ${br_netmask}"],
 		}
 
