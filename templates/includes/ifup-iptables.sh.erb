@@ -7,6 +7,9 @@ if [ "x$INTIP" != "x" ]; then
 	/sbin/iptables -A FORWARD -s $INTIP/32 -j ACCEPT
 
 	/sbin/iptables -A FORWARD -d $INTIP/32 -p tcp --dport 22 -j ACCEPT
+	
+
+	
 	if [ "x$SSHPORT" != "x" ]; then
 		/sbin/iptables -t nat -A PREROUTING -i <%= extif %> -p tcp --dport $SSHPORT -j DNAT --to-destination $INTIP:22
 	fi

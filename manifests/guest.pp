@@ -9,41 +9,43 @@
 #
 
 define kvmhost::guest(
-  $ensure       = present,
-  $autostart    = false,
-  $vncid        = "",
+	$ensure       = present,
+	$autostart    = false,
+	$vncid        = "",
 
-  $guestcpus    = "1",
-  $guestmemory  = "1024",
+	$guestcpus    = "1",
+	$guestmemory  = "1024",
 
-  #network params
-  $guestintip   = false,
-  $guestmacaddr = undef,
-  $hostbrname   = "${kvmhost::host::br_name}",
+	#network params
+	$guestintip   = false,
+	$guestmacaddr = undef,
+	$hostbrname   = "${kvmhost::host::br_name}",
 
-  $guestextip   = undef,
-  $hostexitif   = "eth0",
-  $fwnat        = [],
-  $fwfilter     = [],
-  $config_dhcp  = true,
-  $guestnicmodel= false,
+	$guestextip   = undef,
+	$hostexitif   = "eth0",
+	$fwnat        = [],
+	$fwfilter     = [],
+	$config_dhcp  = true,
+	$guestnicmodel= false,
 
-  # disks params
-  $guestdrbd    = false,
-  $guestdisks   = [],
-  # alternativ disk param method
-  $guest_hda    = false,
-  $guest_hdb    = false,
-  $guest_hdc    = false,
-  $guest_hdd    = false,
-  $guest_hde	= false,
-  $isoimage     = "ubuntu-14.04.1-server-amd64.iso",
+	$guestdomain	= "",
 
-  # dnsMadeEasy setting
-  $dnsMadeEasyId 		= false,
-  $dnsMadeEasyUser 		= false,
-  $dnsMadeEasyPasswd 	= false,
-  $dnsMadeEasyUrl 		= "http://www.dnsmadeeasy.com/servlet/updateip",
+	# disks params
+	$guestdrbd    = false,
+	$guestdisks   = [],
+	# alternativ disk param method
+	$guest_hda    = false,
+	$guest_hdb    = false,
+	$guest_hdc    = false,
+	$guest_hdd    = false,
+	$guest_hde	= false,
+	$isoimage     = "ubuntu-14.04.1-server-amd64.iso",
+
+	# dnsMadeEasy setting
+	$dnsMadeEasyId 		= false,
+	$dnsMadeEasyUser 		= false,
+	$dnsMadeEasyPasswd 	= false,
+	$dnsMadeEasyUrl 		= "http://www.dnsmadeeasy.com/servlet/updateip",
 
 ) {
 	require kvmhost
@@ -78,39 +80,56 @@ define kvmhost::guest(
 	    mode    => "0550"
   	}
 
-  if $config_dhcp and defined("dhcp::server") {
-    dhcp::server::host {"${name}":
-        address   => $guestintip,
-        hwaddress => $guestmacaddr,
-    }
-  }
+  	if $guestdomain != "" {
+  	    $hostname = "${name}.${guestdomain}"
+  	} else {
+  	    $hostname = "${name}"
+  	}
 
-  if ($::kvmhost::host::lan_domain != "localnet") and $guestintip {
-    if defined(::Dns::Zone[$::kvmhost::host::lan_domain]) {
-      if defined(::Dns::Zone[ $::kvmhost::host::dns_reverszone ]) {
-        $arecPtr = true
-      } else {
-        $arecPtr = false
-      }
-	    dns::record::a { "${name}":
-	      zone  => $::kvmhost::host::lan_domain,
-	      data  => $guestintip,
-	      ptr   => $arecPtr
+	if $config_dhcp and defined("dhcp::server") {
+		dhcp::server::host {"${hostname}":
+			address   => $guestintip,
+			hwaddress => $guestmacaddr,
+		}
+	}
+
+	if $guestdomain != "" and $guestintip  {
+	    if defined(::Dns::Zone[$guestdomain]) {
+			$dns_iparr		= split($guestintip,'[.]')
+			$dns_reverszone = "${dns_iparr[2]}.${dns_iparr[1]}.${dns_iparr[0]}.IN-ADDR.ARPA"
+			if defined(::Dns::Zone[$dns_reverszone]) {
+				$arecPtr = true
+			} else {
+				$arecPtr = false
+				if kvmhost::verbose {
+				    notify{"no reverse ptr for ${dns_reverszone}":}
+				}
+			}
+
+			dns::record::a { "${name}":
+	      		zone  => $guestdomain,
+	      		data  => $guestintip,
+	      		ptr   => $arecPtr
+	    	}
+
+	    } elsif kvmhost::verbose {
+	        notify{"dns zone: ${guestdomain} not defined": }
 	    }
-    }
-  }
+	} elsif kvmhost::verbose {
+		notify{"no landomain: ${guestdomain} or no int-ip: ${guestintip}":}
+	}
 
 
-  if $autostart and $ensure == 'present' {
-    file{"${etcpath}/autostart/${name}.conf":
-      ensure => link,
-      target => "${etcpath}/${name}.conf",
-      require => File["${etcpath}","${etcpath}/autostart/","${etcpath}/${name}.conf"],
-    }
-  } else {
-    file{"${etcpath}/autostart/${name}.conf":
-      ensure => absent
-    }
-  }
+	if $autostart and $ensure == 'present' {
+		file{"${etcpath}/autostart/${name}.conf":
+		  ensure => link,
+		  target => "${etcpath}/${name}.conf",
+		  require => File["${etcpath}","${etcpath}/autostart/","${etcpath}/${name}.conf"],
+		}
+	} else {
+		file{"${etcpath}/autostart/${name}.conf":
+			ensure => absent
+		}
+	}
 
 }

@@ -10,24 +10,26 @@
 #
 
 class kvmhost (
-  $sysprefix       = 'kvm',
+	$sysprefix		= 'kvm',
 
-  # path infos
-  $basepath         = '/srv/kvm',
-  $etcpath          = '',
-  $hdimagepath      = '',
-  $cdrompath        = '',
-  $defaultiso       = 'ubuntu-14.04.1-server-amd64.iso',
-  $defaultisourl    = '',
-  $piddir           = '',
+	# path infos
+	$basepath		= '/srv/kvm',
+	$etcpath		= '',
+	$hdimagepath	= '',
+	$cdrompath		= '',
+	$defaultiso		= 'ubuntu-14.04.1-server-amd64.iso',
+	$defaultisourl	= '',
+	$piddir			= '',
 
-  # networking
-  $bridgename   	= '',
-  $localnet         = '192.168.0.0/16',
+	# networking
+	$bridgename   	= '',
+	$localnet		= '192.168.0.0/16',
 
-  $extif            = 'eth0',
-  $defaultroutes	= [],
-  $installntp		= true,
+	$extif          = 'eth0',
+	$defaultroutes	= [],
+	$installntp		= true,
+
+	$verbose		= false,
 
 ) {
 

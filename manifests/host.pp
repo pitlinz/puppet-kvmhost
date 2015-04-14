@@ -38,7 +38,7 @@ define kvmhost::host(
 
  $eth0_aliases    	= false,
 
- # br0:
+ # bridge to vnodes:
  $br_ipv4        	= "192.168.1${hostid}.1",
  $br_netmask     	= '255.255.255.0',
  $br_broadcast   	= "192.168.1${hostid}.255",
@@ -172,8 +172,10 @@ define kvmhost::host(
 			}
 		}
 
-		$dns_iparr		= split($br_ipv4,'.')
-		$dns_reverszone = "${dns_iparr[2]}.${dns_iparr[1]}.${dns_iparr[0]}"
+		$dns_iparr		= split($br_ipv4,'[.]')
+		$dns_reverszone = "${dns_iparr[2]}.${dns_iparr[1]}.${dns_iparr[0]}.IN-ADDR.ARPA"
+
+		# notify{"ip: ${br_ipv4} zone: ${dns_reverszone}":}
 
 	    if !defined(::Dns::Zone[ "${dns_reverszone}" ]) {
 	      dns::zone { "${dns_reverszone}":

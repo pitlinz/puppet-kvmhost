@@ -37,6 +37,10 @@ if [ -n "$1" ];then
 			/sbin/sysctl -w net.ipv4.ip_forward=1
 		fi
 		
+		if [ "x$VNCID" != "x" ]; then
+			let SSHPORT=2200+$VNCID
+		fi
+
 		. <%= kvmhost_basepath %>/bin/includes/ifup-iptables.sh.inc
 		 		
 	fi        
