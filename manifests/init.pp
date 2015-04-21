@@ -37,29 +37,27 @@ class kvmhost (
    * packages
    * --------------------------------------------- */
 
-  package { [
-      "qemu-kvm",
-      "uml-utilities","bridge-utils",
-      "nfs-common" ]:
-    ensure => installed
-  }
+	kvmhost::tools::checkpackage { [
+		"qemu-kvm",
+		"uml-utilities","bridge-utils",
+		"nfs-common","lvm2",
+		"curl","postfix" ]:
+    		ensure => installed
+  	}
 
-  case $lsbdistcodename {
-    'wheezy': {
-      package{"kvm":
-        ensure => installed
-      }
-    }
-    default: {
-      package{"kvm-ipxe":
-        ensure => installed
-      }
-    }
-  }
+  	case $lsbdistcodename {
+    	'wheezy': {
+      		kvmhost::tools::checkpackage{"kvm":
+        		ensure => installed
+      		}
+    	}
+    	default: {
+     		kvmhost::tools::checkpackage{"kvm-ipxe":
+        		ensure => installed
+      		}
+    	}
+  	}
 
-  package { ["curl","postfix"]:
-    ensure => installed,
-  }
 
   /* ---------------------------------------------
    * pathes
