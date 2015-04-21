@@ -63,22 +63,39 @@ define kvmhost::guest(
 	/* -----------------------------------
 	 * generate node configuration
 	 */
-  	file {"${etcpath}/${name}.conf":
-    	content => template("kvmhost/guest/guest.conf.erb"),
+  	concat {"${etcpath}/${name}.conf":
     	require => File[$etcpath],
 	}
 
-  	file {"${etcpath}/${name}.ifup":
-	    content => template("kvmhost/guest/guest.ifup.erb"),
+	concat::fragment{"guest_${name}_conf":
+	    content => template("kvmhost/guest/guest.conf.erb"),
+	    target  => "${etcpath}/${name}.conf",
+	    order	=> "00"
+	}
+
+
+  	concat {"${etcpath}/${name}.ifup":
 	    require => File[$etcpath],
 	    mode    => "0550",
 	}
 
-  	file {"${etcpath}/${name}.ifdown":
-	    content => template("kvmhost/guest/guest.ifdown.erb"),
+	concat::fragment{"guest_${name}_ifup":
+	    content => template("kvmhost/guest/guest.ifup.erb"),
+	    target  => "${etcpath}/${name}.ifup",
+	    order	=> "00"
+	}
+
+  	concat{"${etcpath}/${name}.ifdown":
 	    require => File[$etcpath],
 	    mode    => "0550"
   	}
+
+	concat::fragment{"guest_${name}_ifdown":
+	    content => template("kvmhost/guest/guest.ifdown.erb"),
+	    target  => "${etcpath}/${name}.ifdown",
+	    order	=> "00"
+	}
+
 
   	if $guestdomain != "" {
   	    $hostname = "${name}.${guestdomain}"
