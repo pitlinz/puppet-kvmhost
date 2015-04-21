@@ -13,8 +13,9 @@ fi
 if [ "x$1" == "x" ]; then
 	echo "no param specified"
 	exit 1
-elif [ "x$1" == "fwreload" ]; then
+elif [ "x$1" == "xfwreload" ]; then
 	echo "reloading common firewall rules for $CONF"
+	. <%= @basepath %>/bin/includes/ifdown-iptables.sh.inc
 	. <%= @basepath %>/bin/includes/ifup-iptables.sh.inc
 else
 	. <%= @basepath %>/bin/ifup.sh
