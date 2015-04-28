@@ -38,7 +38,7 @@ define kvmhost::guest(
 	$guest_hdb    = false,
 	$guest_hdc    = false,
 	$guest_hdd    = false,
-	$guest_hde	= false,
+	$guest_hde	  = false,
 	$isoimage     = "ubuntu-14.04.1-server-amd64.iso",
 
 	# dnsMadeEasy setting

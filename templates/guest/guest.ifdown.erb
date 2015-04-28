@@ -6,9 +6,9 @@ CONF=`basename $0 | cut -f1 -d'.'`
 . <%= @basepath %>/bin/ifdown.sh 
 
 <% if @fwnat.size != 0 then -%><% fwnat.to_a.each do |rule| -%>
-/sbin/iptables -t nat -D <%= rule %>
+/sbin/iptables -t nat -D <%= rule %> 2>1 >> /dev/null
 <% end -%><% end -%>
 
 <% if @fwfilter.size != 0 then -%><% fwfilter.to_a.each do |rule| -%>
-/sbin/iptables -D <%= rule %>
+/sbin/iptables -D <%= rule %> 2>1 >> /dev/null
 <% end -%><% end -%>
