@@ -37,7 +37,7 @@ restrict -6 default kod notrap nomodify nopeer noquery
 restrict 127.0.0.1
 restrict ::1
 
-# allowe servers
+# allow servers
 <%- if timeservers.size != 0 then -%><%- timeservers.to_a.each do |tsrv| -%>
 restirct <%= tsrv %> 	
 <%- end -%><% end -%>  

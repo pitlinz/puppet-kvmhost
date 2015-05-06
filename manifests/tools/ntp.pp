@@ -13,7 +13,7 @@ define kvmhost::tools::ntp(
     ],
 	$broadcast = "",
 ){
-	package{"ntp":
+	kvmhost::tools::checkpackage{"ntp":
 	    ensure => installed
 	}
 
