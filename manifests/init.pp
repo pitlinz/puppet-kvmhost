@@ -17,12 +17,12 @@ class kvmhost (
 	$etcpath		= '',
 	$hdimagepath	= '',
 	$cdrompath		= '',
-	$defaultiso		= 'ubuntu-14.04.1-server-amd64.iso',
-	$defaultisourl	= '',
+	$defaultiso		= 'ubuntu-14.04.2-server-amd64.iso',
+	$defaultisourl	= 'http://releases.ubuntu.com/14.04/ubuntu-14.04.2-server-amd64.iso',
 	$piddir			= '',
 
 	# networking
-	$bridgename   	= '',
+	$bridgename   	= 'kvmbr0',
 	$localnet		= '192.168.0.0/16',
 
 	$extif          = 'eth0',
@@ -41,7 +41,8 @@ class kvmhost (
 		"qemu-kvm",
 		"uml-utilities","bridge-utils",
 		"nfs-common","lvm2",
-		"curl","postfix" ]:
+		"curl","postfix",
+		"atop","vnstat" ]:
     		ensure => installed
   	}
 

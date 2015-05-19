@@ -19,7 +19,7 @@ define kvmhost::guest(
 	#network params
 	$guestintip   = false,
 	$guestmacaddr = undef,
-	$hostbrname   = "${kvmhost::host::br_name}",
+	$hostbrname   = "${kvmhost::host::br_ifname}",
 
 	$guestextip   = undef,
 	$hostexitif   = "eth0",
@@ -39,7 +39,8 @@ define kvmhost::guest(
 	$guest_hdc    = false,
 	$guest_hdd    = false,
 	$guest_hde	  = false,
-	$isoimage     = "ubuntu-14.04.1-server-amd64.iso",
+	$isoimage     = "ubuntu-14.04.2-server-amd64.iso",
+	$isoimagesrc  = "http://releases.ubuntu.com/14.04/ubuntu-14.04.2-server-amd64.iso",
 
 	# dnsMadeEasy setting
 	$dnsMadeEasyId 		= false,
@@ -52,6 +53,12 @@ define kvmhost::guest(
 
 	$etcpath	= $::kvmhost::kvmhost_etcpath
 	$basepath 	= $::kvmhost::kvmhost_basepath
+
+	if $hostbrname {
+		$bridgename = $hostbrname
+	} else {
+	    $bridgename = $::kvmhost::bridgename
+	}
 
 	File{
     	ensure  => $ensure,

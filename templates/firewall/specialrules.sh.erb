@@ -1,0 +1,20 @@
+#!/bin/bash
+#
+# initial trusted network settings
+
+case "$1" in
+	start)
+<%- if fwfilterappendrules.size != 0 then -%>
+	<%- fwfilterappendrules.to_a.each do |rule| -%>
+	  	/sbin/iptables -A <%= rule %>	  	
+	<% end -%>
+<% end -%> 		
+		;;
+	stop)
+<%- if fwfilterappendrules.size != 0 then -%>
+	<%- fwfilterappendrules.to_a.each do |rule| -%>
+	  	/sbin/iptables -D <%= rule %>	  	
+	<% end -%>
+<% end -%> 			
+		;;
+esac

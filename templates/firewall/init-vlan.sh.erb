@@ -1,0 +1,51 @@
+#!/bin/bash
+
+. /etc/environment 
+
+ # vlan configuration <%= name %>
+
+case "$1" in
+	start)               
+		ip tunnel add ulan<%= rhostid %> mode gre local <%= ipaddress_eth0 %> remote <%= remoteip %> ttl 255
+				
+		#ifconfig ulan<%= rhostid %> <%= localvip %>/30 up
+		#ifconfig ulan<%= rhostid %> pointopoint <%= remotevip %>
+		#ifconfig ulan<%= rhostid %> multicast
+	
+		ip addr add <%= localvip %> dev ulan<%= rhostid %>
+		ip link set ulan<%= rhostid %> up 
+
+		#route add -net 192.168.1<%= rhostid %>.0/24 gw <%= localvip %> dev ulan<%= rhostid %>
+		ip route add 192.168.1<%= rhostid %>.0/24 dev ulan<%= rhostid %>
+		
+		iptables -A INPUT -s 192.168.1<%= rhostid %>.0/24 -j ACCEPT
+		iptables -A INPUT -s <%= remotevip %> -j ACCEPT
+		iptables -A FORWARD -s 192.168.1<%= rhostid %>.0/24 -j ACCEPT
+		iptables -A FORWARD -s <%= remotevip %>  -j ACCEPT
+                
+		iptables -t nat -I POSTROUTING -s 192.168.0.0/16 -d 192.168.1<%= rhostid %>.0/24 -j ACCEPT
+		;;
+		
+	stop)
+		iptables -D INPUT -s 192.168.1<%= rhostid %>.0/24 -j ACCEPT
+		iptables -D INPUT -s <%= remotevip %> -j ACCEPT
+		iptables -D FORWARD -s 192.168.1<%= rhostid %>.0/24 -j ACCEPT		
+		iptables -D FORWARD -s <%= remotevip %> -j ACCEPT
+                
+		iptables -t nat -D POSTROUTING -s 192.168.0.0/16 -d 192.168.1<%= rhostid %>.0/24 -j ACCEPT
+                
+		#route del -net 192.168.1<%= rhostid %>.0/24 gw <%= localvip %> dev ulan<%= rhostid %>
+        ip route del 192.168.1<%= rhostid %>.0/24 dev ulan<%= rhostid %>
+        
+		#ifconfig ulan<%= rhostid %> down
+		#iptunnel del ulan<%= rhostid %>
+		ip link set ulan<%= rhostid %> down
+		ip tunnel del ulan<%= rhostid %>
+		;;
+                
+	restart)
+		$0 stop
+		$0 start
+		;;
+				
+esac				

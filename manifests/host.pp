@@ -39,6 +39,7 @@ define kvmhost::host(
  $eth0_aliases    	= false,
 
  # bridge to vnodes:
+ $br_ifname			= undef,
  $br_ipv4        	= "192.168.1${hostid}.1",
  $br_netmask     	= '255.255.255.0',
  $br_broadcast   	= "192.168.1${hostid}.255",
@@ -49,6 +50,7 @@ define kvmhost::host(
  $br_dhcpdns     	= "192.168.1${hostid}.1",
 
  $configure_iptbl 	= true,
+ $trustedips		= [],
 
  #monit
  $monitchecks     	= true,
@@ -74,7 +76,13 @@ define kvmhost::host(
 	$br_netArr	 	= split($::kvmhost::localnet,'[/]')
  	$br_network  	= $br_netArr[0]
  	$br_networksize = $br_netArr[1]
- 	$br_name        = $::kvmhost::bridgename
+ 	if ($br_ifname) {
+ 	    $br_name	= $br_ifname
+ 	} else {
+ 		$br_name	= $::kvmhost::bridgename
+	}
+
+	validate_string($br_name)
 
  	# ---------------------------------------------------------
 
@@ -94,6 +102,13 @@ define kvmhost::host(
 				creates => "/etc/network/interfaces.back"
 			}
 
+			if is_array($dns_nameservers) {
+			    $exitf_nameservers = join($dns_nameservers," ")
+			} else {
+			    $exitf_name = $dns_nameservers
+			}
+
+
 		    network::interface {"${::kvmhost::extif}":
 				auto => true,
 				ipaddress   => $eth0_ipv4,
@@ -102,7 +117,7 @@ define kvmhost::host(
 				gateway     => $eth0_gateway,
 				up          => [ "route add -net $eth0_network netmask $eth0_netmask gw $eth0_gateway ${::kvmhost::extif}" ],
 				dns_search  => $dns_search,
-				dns_nameservers => $dns_nameservers,
+				dns_nameservers => $exitf_name,
 		    }
 		} else {
 			network::interface{"${::kvmhost::extif}":
@@ -213,8 +228,9 @@ define kvmhost::host(
 
   	if $configure_iptbl and !defined(Kvmhost::Firewall["fw_$name"]) {
 	  	kvmhost::firewall { "fw_$name":
-		      hostid    => $hostid,
-		      sshport	=> $sshport
+		      hostid    	=> $hostid,
+		      sshport		=> $sshport,
+		      trustedips	=> $trustedips,
 	  	}
   	}
 
@@ -234,6 +250,7 @@ define kvmhost::host(
 
   if $monitchecks  {
 	include monit
+	include monit::predefined::checkmdadm
 
     if $monitdevices and is_hash($monitdevices) {
       create_resources(monit::check::device,$monitdevices)
@@ -243,7 +260,7 @@ define kvmhost::host(
       sshport => $sshport
     }
 
-    monit::predefined::checkmdadm { "mdadm_${name}": }
+
     monit::predefined::checkdrbd { "mdadm_${name}": }
 
     monit::predefined::checkbind { "bind_${name}":

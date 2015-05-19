@@ -24,17 +24,17 @@ fi
 case "$1" in
 	start)
 		for ASCONF in `ls ${KVMETC}/autostart/*.conf`; do
-			$KVMBIN start `basename $ASCONF`
+			$KVMBIN start `basename $ASCONF | cut -f1 -d'.'`
 		done	
 		;;
 	stop)
 		for ASCONF in `ls ${KVMETC}/autostart/*.conf`; do
-			$KVMBIN killhost `basename $ASCONF`
+			$KVMBIN killhost `basename $ASCONF | cut -f1 -d'.'`
 		done	
 		;;
 	savestop)
 		for ASCONF in `ls ${KVMETC}/autostart/*.conf`; do
-			$KVMBIN stop `basename $ASCONF`
+			$KVMBIN stop `basename $ASCONF |  cut -f1 -d'.'`
 		done	
 		;;	
 esac

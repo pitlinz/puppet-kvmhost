@@ -3,9 +3,9 @@ resource <%= name %> {
   disk   <%= disk %>;
   meta-disk internal;
   on <%= drbdMasterName %> {
-    address <%= drbdMasterIp %>:77<%= minor %>;
+    address <%= drbdMasterIp %>:<%= port %>;
   }
   on <%= drbdSlaveName %> {
-    address <%= drbdSlaveIp %>:77<%= minor %>;
+    address <%= drbdSlaveIp %>:<%= port %>;
   }
 }
