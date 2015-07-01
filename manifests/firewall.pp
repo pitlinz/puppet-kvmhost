@@ -54,6 +54,12 @@ define kvmhost::firewall(
 		require	=> File["/etc/firewall"],
 	}
 
+    file {"/etc/firewall/010-trusted.sh":
+		ensure 	=> absent,
+		backup 	=> false,
+		require	=> File["/etc/firewall"],
+    }
+
     file {"/etc/firewall/020-trusted.sh":
 		content => template("kvmhost/firewall/trusted.sh.erb"),
 		require	=> File["/etc/firewall"],

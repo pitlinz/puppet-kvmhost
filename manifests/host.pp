@@ -152,9 +152,29 @@ define kvmhost::host(
 	  	}
   	}
 
+  /* ---------------------------------------------------------
+   * monit
+   * --------------------------------------------------------- */
+
+	if $monitchecks  {
+		include monit
+		include monit::predefined::checkmdadm
+		include monit::predefined::checksshd
+
+    	if $monitdevices and is_hash($monitdevices) {
+      		create_resources(monit::check::device,$monitdevices)
+    	}
+  	}
+
+  /* ---------------------------------------------------------
+   * dns & dhcp
+   * --------------------------------------------------------- */
+
   	if $install_dnssrv {
 	  	include dns::server
-
+	  	if $monitchecks {
+			include monit::predefined::checkbind
+		}
 	  	dns::server::options {'/etc/bind/named.conf.options':
 	    	forwarders 		=> $dns_forwarders,
 	    	allow_query 	=> $dns_allow_query,
@@ -223,8 +243,15 @@ define kvmhost::host(
 	    	domain_name => $lan_domain,
 	    	dns_servers => $br_dhcpdns,
 		}
+
+		if $monitchecks {
+		    include monit::predefined::checkiscdhcp
+		}
 	}
 
+  /* ------------------------------------------------
+   * firewall
+   * ------------------------------------------------ */
 
   	if $configure_iptbl and !defined(Kvmhost::Firewall["fw_$name"]) {
 	  	kvmhost::firewall { "fw_$name":
@@ -244,54 +271,31 @@ define kvmhost::host(
 
 	}
 
-  /* ---------------------------------------------------------
-   * monit
-   * --------------------------------------------------------- */
 
-  if $monitchecks  {
-	include monit
-	include monit::predefined::checkmdadm
-
-    if $monitdevices and is_hash($monitdevices) {
-      create_resources(monit::check::device,$monitdevices)
-    }
-
-    monit::predefined::checksshd { "sshd_${name}":
-      sshport => $sshport
-    }
-
-
-    monit::predefined::checkdrbd { "mdadm_${name}": }
-
-    monit::predefined::checkbind { "bind_${name}":
-      listenip => $br_ipv4
-    }
-    monit::predefined::checkiscdhcp { "dhcp_${name}": }
-  }
 
   /* ------------------------------------------------
    * guests
    * ------------------------------------------------ */
 
-  if $configure_drbd {
-	  # @todo drbd
-	  class {"kvmhost::drbd": }
-  }
+  	if $configure_drbd {
+	  	# @todo drbd
+	  	class {"kvmhost::drbd": }
+  	}
 
-  if $kvm_vgdevices {
-    lvm::volume_group { "${kvm_vgname}":
-      physical_volumes => $kvm_vgdevices
-    }
-  }
+  	if $kvm_vgdevices {
+    	lvm::volume_group { "${kvm_vgname}":
+      		physical_volumes => $kvm_vgdevices
+    	}
+  	}
 
-  if $kvmguests and is_hash($kvmguests) {
-    $kvmguestdefaults = {
-      monitchecks     => $monitchecks,
-      gateway         => $br_ipv4,
-      ippre           => $kvmguest_ippre,
-      extip           => $eth0_ipv4,
-      domain          => $lan_domain,
-    }
-    create_resources(kvmhost::host::guest,$kvmguests,$kvmguestdefaults)
-  }
+  	if $kvmguests and is_hash($kvmguests) {
+    	$kvmguestdefaults = {
+      		monitchecks     => $monitchecks,
+      		gateway         => $br_ipv4,
+      		ippre           => $kvmguest_ippre,
+      		extip           => $eth0_ipv4,
+      		domain          => $lan_domain,
+    	}
+    	create_resources(kvmhost::host::guest,$kvmguests,$kvmguestdefaults)
+  	}
 }

@@ -26,6 +26,7 @@ define kvmhost::guest(
 	$fwnat        = [],
 	$fwfilter     = [],
 	$config_dhcp  = true,
+	$config_dns	  = true,
 	$guestnicmodel= false,
 
 	$guestdomain	= "",
@@ -117,30 +118,33 @@ define kvmhost::guest(
 		}
 	}
 
-	if $guestdomain != "" and $guestintip  {
-	    if defined(::Dns::Zone[$guestdomain]) {
-			$dns_iparr		= split($guestintip,'[.]')
-			$dns_reverszone = "${dns_iparr[2]}.${dns_iparr[1]}.${dns_iparr[0]}.IN-ADDR.ARPA"
-			if defined(::Dns::Zone[$dns_reverszone]) {
-				$arecPtr = true
-			} else {
-				$arecPtr = false
-				if kvmhost::verbose {
-				    notify{"no reverse ptr for ${dns_reverszone}":}
+	if $config_dns {
+		if $guestdomain != "" and $guestintip  {
+		    if defined(::Dns::Zone[$guestdomain]) {
+				$dns_iparr		= split($guestintip,'[.]')
+				$dns_reverszone = "${dns_iparr[2]}.${dns_iparr[1]}.${dns_iparr[0]}.IN-ADDR.ARPA"
+				if defined(::Dns::Zone[$dns_reverszone]) {
+					$arecPtr = true
+				} else {
+					$arecPtr = false
+					if kvmhost::verbose {
+					    notify{"guest ${name}: no reverse ptr for ${dns_reverszone}":}
+					}
 				}
-			}
 
-			dns::record::a { "${name}":
-	      		zone  => $guestdomain,
-	      		data  => $guestintip,
-	      		ptr   => $arecPtr
-	    	}
-
-	    } elsif kvmhost::verbose {
-	        notify{"dns zone: ${guestdomain} not defined": }
-	    }
-	} elsif kvmhost::verbose {
-		notify{"no landomain: ${guestdomain} or no int-ip: ${guestintip}":}
+				if !defined(Dns::Record::A["${name}"]) {
+					dns::record::a { "${name}":
+			      		zone  => $guestdomain,
+			      		data  => $guestintip,
+			      		ptr   => $arecPtr
+			    	}
+				}
+		    } elsif kvmhost::verbose {
+		        notify{"guest ${name}: dns zone: ${guestdomain} not defined": }
+		    }
+		} elsif kvmhost::verbose {
+			notify{"guest ${name}: no landomain: ${guestdomain} or no int-ip: ${guestintip}":}
+		}
 	}
 
 
