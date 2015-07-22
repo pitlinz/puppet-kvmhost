@@ -31,6 +31,11 @@ fi
 if [ "x$INTIP" != "x" ]; then
 	let SSHPORT=2200+$VNCID
 	. <%= kvmhost_basepath %>/bin/includes/ifdown-iptables.sh.inc
+else
+	if [ "NETWORKMODE" == "bridged" ]; then
+		/sbin/route del -host $EXTIP dev <%= bridgename %>
+		/sbin/iptables -t nat -D POSTROUTING -s $EXTIF -j ACCEPT	
+	fi 			
 fi
         
 if [ -n "$1" ];then

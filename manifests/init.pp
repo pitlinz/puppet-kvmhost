@@ -53,10 +53,10 @@ class kvmhost (
       		}
     	}
     	'jessie': {
-      		kvmhost::tools::checkpackage{"kvm":
-        		ensure => installed
-      		}
-    	}    	
+      		#kvmhost::tools::checkpackage{"qemu-kvm":
+        	#	ensure => installed
+      		#}
+    	}
     	default: {
      		kvmhost::tools::checkpackage{"kvm-ipxe":
         		ensure => installed

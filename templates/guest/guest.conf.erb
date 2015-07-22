@@ -45,4 +45,8 @@ VNCID="<%= vncid %>"
 <% if @guestnicmodel -%>
 NICMODEL="e1000"
 <% end -%>
+<% if @networkmode -%>
+NETWORKMODE="<%= @networkmode %>"
+<% end -%>
+ 
 

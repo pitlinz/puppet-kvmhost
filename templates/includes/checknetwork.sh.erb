@@ -35,5 +35,9 @@ if [ "x$NICMODEL" == "x" ]; then
 fi
 
 if [ "x$NETWORK" == "x" ]; then
-	NETWORK="-net nic,vlan=0,model=$NICMODEL,macaddr=$MACADDR -net tap,ifname=$TAP,script=<%= kvmhost_etcpath %>/$2.ifup,downscript=<%= kvmhost_etcpath %>/$2.ifdown"
+	if [ "$NETWORKMODE" == "briged" ]; then
+		NETWORK="-device virtio-net,netdev=tunnel -netdev tap,id=tunnel,ifname=$TAP,script=<%= kvmhost_etcpath %>/$2.ifup,downscript=<%= kvmhost_etcpath %>/$2.ifdown"
+	else
+		NETWORK="-net nic,vlan=0,model=$NICMODEL,macaddr=$MACADDR -net tap,ifname=$TAP,script=<%= kvmhost_etcpath %>/$2.ifup,downscript=<%= kvmhost_etcpath %>/$2.ifdown"
+	fi
 fi

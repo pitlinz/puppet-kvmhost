@@ -28,6 +28,7 @@ define kvmhost::guest(
 	$config_dhcp  = true,
 	$config_dns	  = true,
 	$guestnicmodel= false,
+	$networkmode  = "routed", # or bridged
 
 	$guestdomain	= "",
 
@@ -111,7 +112,7 @@ define kvmhost::guest(
   	    $hostname = "${name}"
   	}
 
-	if $config_dhcp and defined("dhcp::server") {
+	if $guestintip and $config_dhcp and defined("dhcp::server") {
 		dhcp::server::host {"${hostname}":
 			address   => $guestintip,
 			hwaddress => $guestmacaddr,
@@ -142,7 +143,7 @@ define kvmhost::guest(
 		    } elsif kvmhost::verbose {
 		        notify{"guest ${name}: dns zone: ${guestdomain} not defined": }
 		    }
-		} elsif kvmhost::verbose {
+		} elsif kvmhost::verbose == true {
 			notify{"guest ${name}: no landomain: ${guestdomain} or no int-ip: ${guestintip}":}
 		}
 	}

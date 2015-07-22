@@ -105,9 +105,8 @@ define kvmhost::host(
 			if is_array($dns_nameservers) {
 			    $exitf_nameservers = join($dns_nameservers," ")
 			} else {
-			    $exitf_name = $dns_nameservers
+			    $exitf_nameservers = $dns_nameservers
 			}
-
 
 		    network::interface {"${::kvmhost::extif}":
 				auto => true,
@@ -117,7 +116,7 @@ define kvmhost::host(
 				gateway     => $eth0_gateway,
 				up          => [ "route add -net $eth0_network netmask $eth0_netmask gw $eth0_gateway ${::kvmhost::extif}" ],
 				dns_search  => $dns_search,
-				dns_nameservers => $exitf_name,
+				dns_nameservers => $exitf_nameservers,
 		    }
 		} else {
 			network::interface{"${::kvmhost::extif}":

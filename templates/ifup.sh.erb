@@ -42,7 +42,14 @@ if [ -n "$1" ];then
 		fi
 
 		. <%= kvmhost_basepath %>/bin/includes/ifup-iptables.sh.inc
-		 		
+	else
+		if [ "NETWORKMODE" == "bridged" ]; then
+			if [ `iptables -L FORWARD -nv | grep -c "PHYSDEV"` -lt 1 ]; then
+				/sbin/iptables -I FORWARD -m physdev --physdev-is-bridged -j ACCEPT
+			fi				
+			/sbin/iptables -t nat -I POSTROUTING -s $EXTIF -j ACCEPT
+			/sbin/route add -host $EXTIP dev <%= bridgename %>
+		fi 		
 	fi        
 	echo $1 > <%= kvmhost_piddir %>/$CONF.tap
 
