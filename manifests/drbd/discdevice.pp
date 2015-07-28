@@ -21,7 +21,7 @@ define kvmhost::drbd::discdevice (
 ) {
 
    	if !$portnbr {
-   	    $port = "77${portnbr}"
+   	    $port = "77${minor}"
    	} else {
    	    $port = $portnbr
    	}
@@ -55,27 +55,22 @@ define kvmhost::drbd::discdevice (
     }
 
 
-	if has_ip_address($drbdMasterIp) {
-	    $fwfilterappendrules = ["INPUT -s ${drbdSlaveIp} -p tcp --dport ${port} -j ACCEPT"]
-	} else {
-	    $fwfilterappendrules = ["INPUT -s ${$drbdMasterIp} -p tcp --dport ${port} -j ACCEPT"]
-	}
+	if defined(File["/etc/firewall"]) {
+		if has_ip_address($drbdMasterIp) {
+		    $fwfilterappendrules = ["INPUT -s ${drbdSlaveIp} -p tcp --dport ${port} -j ACCEPT"]
+		} else {
+		    $fwfilterappendrules = ["INPUT -s ${$drbdMasterIp} -p tcp --dport ${port} -j ACCEPT"]
+		}
 
-  	if !defined(File["/etc/firewall"]) {
-		file {"/etc/firewall":
-	    	ensure => directory,
-	    	mode    => '0750',
-	  	}
-	}
 
-	file { "/etc/firewall/099-drbd-${name}.sh":
-		ensure  => $ensure,
-		owner   => "root",
-		group   => "root",
-		mode    => "0770",
-		content => template("kvmhost/firewall/specialrules.sh.erb"),
-		require => File["/etc/firewall"]
+		file { "/etc/firewall/099-drbd-${name}.sh":
+			ensure  => $ensure,
+			owner   => "root",
+			group   => "root",
+			mode    => "0770",
+			content => template("kvmhost/firewall/specialrules.sh.erb"),
+			require => File["/etc/firewall"],
+		}
 	}
-
 }
 

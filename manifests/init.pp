@@ -90,7 +90,7 @@ class kvmhost (
   }
 
   case $defaultiso {
-    '': { $kvmhost_defaultiso = "ubuntu-14.04.1-server-amd64.iso" }
+    '': { $kvmhost_defaultiso = "ubuntu-14.04.2-server-amd64.iso" }
     default: { $kvmhost_defaultiso = $defaultiso }
   }
 
@@ -131,7 +131,7 @@ class kvmhost (
 	} elsif $defaultiso == "ubuntu-14.04.2-server-amd64.iso" {
 		exec {"donload-ubuntu-14.04.2-server-amd64.iso":
 			command => "/usr/bin/wget -O ${kvmhost_cdrompath}/ubuntu-14.04.2-server-amd64.iso http://releases.ubuntu.com/14.04/ubuntu-14.04.2-server-amd64.iso",
-			creates => "${kvmhost_basepath}/cdrom/ubuntu-14.04.1-server-amd64.iso",
+			creates => "${kvmhost_basepath}/cdrom/ubuntu-14.04.2-server-amd64.iso",
 			require => File["${kvmhost_cdrompath}/"]
 		}
 	} elsif $defaultiso != '' and $defaultisourl != ''  {
@@ -236,4 +236,13 @@ class kvmhost (
 	    require => File["/etc/init.d/kvmhost"],
 	    refreshonly => true,
   	}
+
+
+	/**
+	 * tools
+	 */
+	file { "${kvmhost_basepath}/bin/installpuppet.sh":
+	    mode    => '0550',
+	    content => template("kvmhost/installpuppet.sh.erb"),
+	}
 }

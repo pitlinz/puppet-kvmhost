@@ -1,0 +1,59 @@
+#!/bin/bash
+if [ -d /etc/puppet ]; then
+  apt-get purge -y puppet 
+  
+  rm -R /etc/puppet
+  rm -R /var/lib/puppet
+fi
+
+
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 16126D3A3E5C1192 40976EAF437D05B5
+
+cd /tmp/
+if [ `cat /etc/apt/sources.list | grep -c precise` -gt 1 ]; then
+  PACKAGENAME=puppetlabs-release-precise.deb
+elif [ `cat /etc/apt/sources.list | grep -c trusty` -gt 1 ]; then
+  PACKAGENAME=puppetlabs-release-trusty.deb
+elif [ `cat /etc/apt/sources.list | grep -c wheezy` -gt 1 ]; then
+  PACKAGENAME=puppetlabs-release-wheezy.deb
+elif [ `cat /etc/apt/sources.list | grep -c jessie` -gt 1 ]; then
+	PACKAGENAME=puppetlabs-release-jessie.deb
+else
+  echo "unknown os"
+  exit 1
+fi
+
+if [ -d /etc/puppet ]; then
+  apt-get purge -y puppet
+  rm -R /etc/puppet
+  rm -R /var/lib/puppet 
+fi
+
+if [ ! -f https://apt.puppetlabs.com/$PACKAGENAME ]; then
+  wget https://apt.puppetlabs.com/$PACKAGENAME
+  dpkg -i $PACKAGENAME
+fi
+apt-get update
+apt-get install -y puppet vim-puppet
+
+(cat <<'EOF'
+[agent]
+        report = true
+        classfile = $vardir/classes.txt
+        localconfig = $vardir/localconfig
+        graph = true
+        pluginsync = true
+        environment = production
+EOF
+) >> /etc/puppet/puppet.conf
+
+sed -i "s/templatedir/#templatedir/g" /etc/puppet/puppet.conf
+sed -i "s/START=no/START=yes/g" /etc/default/puppet
+
+
+
+# fix apt:
+#rm -rf /var/lib/apt/lists
+#apt-get clean
+#apt-get update
+

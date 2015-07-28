@@ -153,7 +153,7 @@ define kvmhost::guest(
 		file{"${etcpath}/autostart/${name}.conf":
 		  ensure => link,
 		  target => "${etcpath}/${name}.conf",
-		  require => File["${etcpath}","${etcpath}/autostart/","${etcpath}/${name}.conf"],
+		  require => [File["${etcpath}","${etcpath}/autostart/"],Concat["${etcpath}/${name}.conf"]],
 		}
 	} else {
 		file{"${etcpath}/autostart/${name}.conf":
