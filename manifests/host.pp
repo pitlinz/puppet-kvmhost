@@ -42,6 +42,7 @@ define kvmhost::host(
  $br_ifname			= undef,
  $br_ipv4        	= "192.168.1${hostid}.1",
  $br_netmask     	= '255.255.255.0',
+ $br_network		= '',
  $br_broadcast   	= "192.168.1${hostid}.255",
 
  $install_dhcpsrv 	= true,
@@ -73,9 +74,13 @@ define kvmhost::host(
 
 	$sysprefix		= $::kvmhost::sysprefix
 
-	$br_netArr	 	= split($::kvmhost::localnet,'[/]')
- 	$br_network  	= $br_netArr[0]
- 	$br_networksize = $br_netArr[1]
+	if $br_network != '' {
+	    $br_netArr	 	= split($br_network,'[/]')
+	} else {
+		$br_netArr	 	= split($::kvmhost::localnet,'[/]')
+	}
+ 	$br_networkaddr  	= $br_netArr[0]
+
  	if ($br_ifname) {
  	    $br_name	= $br_ifname
  	} else {
@@ -139,7 +144,7 @@ define kvmhost::host(
 	    	auto => true,
 	    	ipaddress => $br_ipv4,
 	    	netmask => $br_netmask,
-	    	network => $br_network,
+	    	network => $br_networkaddr,
 	    	pre_up => [
 		      "/sbin/brctl addbr ${br_name}",
 		      "echo 1 > /proc/sys/net/ipv4/ip_forward"
@@ -233,7 +238,7 @@ define kvmhost::host(
     		interfaces => $br_name
     	}
 
-	  	dhcp::server::subnet { "${br_network}":
+	  	dhcp::server::subnet { "${br_networkaddr}":
 	    	netmask     => $br_netmask,
 	    	routers     => $br_ipv4,
 	    	broadcast   => $br_broadcast,
@@ -264,10 +269,8 @@ define kvmhost::host(
 	if $install_ntp {
 	    kvmhost::tools::ntp{"ntp_${name}":
 	        timeservers  => $timeservers,
-			restrictions => ["${br_network} netmask ${br_netmask}"],
+			restrictions => ["${br_networkaddr} netmask ${br_netmask}"],
 		}
-
-
 	}
 
 

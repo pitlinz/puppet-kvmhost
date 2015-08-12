@@ -17,8 +17,8 @@ class kvmhost (
 	$etcpath		= '',
 	$hdimagepath	= '',
 	$cdrompath		= '',
-	$defaultiso		= 'ubuntu-14.04.2-server-amd64.iso',
-	$defaultisourl	= 'http://releases.ubuntu.com/14.04/ubuntu-14.04.2-server-amd64.iso',
+	$defaultiso		= 'ubuntu-14.04.3-server-amd64.iso',
+	$defaultisourl	= 'http://releases.ubuntu.com/14.04/ubuntu-14.04.3-server-amd64.iso',
 	$piddir			= '',
 
 	# networking
