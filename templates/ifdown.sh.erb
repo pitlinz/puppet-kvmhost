@@ -16,6 +16,10 @@ fi
 
 . <%= kvmhost_etcpath %>/$CONF.conf
 
+if [ "x$BRIDGENAME" == "x" ]; then
+	BRIDGENAME=<%= bridgename %>
+fi
+
 if [ "x$VNCID" == "x" ]; then
 	VNCID=`grep INTIP <%= kvmhost_etcpath %>/$CONF.conf | cut -f4 -d'.'`
 	if [ "x$VNCID" == "x" ]; then
@@ -33,13 +37,13 @@ if [ "x$INTIP" != "x" ]; then
 	. <%= kvmhost_basepath %>/bin/includes/ifdown-iptables.sh.inc
 else
 	if [ "NETWORKMODE" == "bridged" ]; then
-		/sbin/route del -host $EXTIP dev <%= bridgename %>
+		/sbin/route del -host $EXTIP dev $BRIDGENAME
 		/sbin/iptables -t nat -D POSTROUTING -s $EXTIF -j ACCEPT	
 	fi 			
 fi
         
 if [ -n "$1" ];then
-	/sbin/brctl delif <%= bridgename %> $1
+	/sbin/brctl delif $BRIDGENAME $1
 	/sbin/ifconfig $1 down
 	/usr/sbin/tunctl -d $1	
 	rm <%= kvmhost_piddir %>/$CONF.tap

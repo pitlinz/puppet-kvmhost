@@ -25,13 +25,17 @@ elif [ `ifconfig | grep -c $EXTIP` -lt 1 ]; then
 	fi
 fi
 
+if [ "x$BRIDGENAME" == "x" ]; then
+	BRIDGENAME=<%= bridgename %>
+fi
+
 if [ -n "$1" ];then
 	echo "starting network for $CONF on $1 Network: $INTIP <-> $EXTIP"
 	/usr/sbin/tunctl -u root -t $1
 	/sbin/ifconfig $1 0.0.0.0 up
 
 	sleep 0.5s
-	/sbin/brctl addif <%= bridgename %> $1
+	/sbin/brctl addif $BRIDGENAME $1
 	if [ "x$INTIP" != "x" ]; then
 		if [ `cat /proc/sys/net/ipv4/ip_forward` -lt 1 ]; then
 			/sbin/sysctl -w net.ipv4.ip_forward=1
@@ -48,7 +52,7 @@ if [ -n "$1" ];then
 				/sbin/iptables -I FORWARD -m physdev --physdev-is-bridged -j ACCEPT
 			fi				
 			/sbin/iptables -t nat -I POSTROUTING -s $EXTIF -j ACCEPT
-			/sbin/route add -host $EXTIP dev <%= bridgename %>
+			/sbin/route add -host $EXTIP dev $BRIDGENAME
 		fi 		
 	fi        
 	echo $1 > <%= kvmhost_piddir %>/$CONF.tap

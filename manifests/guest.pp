@@ -19,7 +19,7 @@ define kvmhost::guest(
 	#network params
 	$guestintip   = false,
 	$guestmacaddr = undef,
-	$hostbrname   = "${kvmhost::host::br_ifname}",
+	$hostbrname   = "",
 
 	$guestextip   = undef,
 	$hostexitif   = "eth0",
@@ -56,10 +56,10 @@ define kvmhost::guest(
 	$etcpath	= $::kvmhost::kvmhost_etcpath
 	$basepath 	= $::kvmhost::kvmhost_basepath
 
-	if $hostbrname {
-		$bridgename = $hostbrname
-	} else {
+	if $hostbrname == "" {
 	    $bridgename = $::kvmhost::bridgename
+	} else {
+	    $bridgename = $hostbrname
 	}
 
 	File{

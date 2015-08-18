@@ -43,10 +43,13 @@ ISOIMG="<%= isoimage %>"
 VNCID="<%= vncid %>"
 <% end -%>
 <% if @guestnicmodel -%>
-NICMODEL="e1000"
+NICMODEL="<%= guestnicmodel %>"
 <% end -%>
 <% if @networkmode -%>
 NETWORKMODE="<%= @networkmode %>"
+<% end -%>
+<% if @bridgename -%>
+BRIDGENAME="<%= @bridgename %>"
 <% end -%>
  
 
